@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业级多智能体管理平台 - 快速修复版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+
+        .options {
+            display: grid;
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .option {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .option.secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .option.tertiary {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #333;
+        }
+
+        .status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .loading-test {
+            margin: 30px 0;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+        .progress {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🤖</div>
+        <h1>平台快速修复</h1>
+        <p class="subtitle">检测到加载问题，为您提供多种解决方案</p>
+
+        <div class="status">
+            <strong>当前状态：</strong> <span id="status">检测中...</span>
+        </div>
+
+        <div class="loading-test">
+            <h3>🔧 自动诊断</h3>
+            <div class="progress">
+                <div class="progress-bar" id="progress"></div>
+            </div>
+            <div id="diagnostic-log" class="log">开始诊断...</div>
+        </div>
+
+        <div class="options">
+            <a href="simple.html" class="option">
+                ⚡ 使用简化版平台 (推荐)
+            </a>
+
+            <button onclick="tryDirectLoad()" class="option secondary">
+                🔄 重新尝试加载正式版
+            </button>
+
+            <a href="debug.html" class="option tertiary">
+                🛠️ 打开详细诊断工具
+            </a>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 14px; color: #666;">
+            <p><strong>建议：</strong> 如果您是第一次使用，推荐先使用简化版熟悉功能</p>
+        </div>
+    </div>
+
+    <script>
+        let progress = 0;
+        const progressBar = document.getElementById('progress');
+        const statusEl = document.getElementById('status');
+        const logEl = document.getElementById('diagnostic-log');
+
+        function updateProgress(percentage, message) {
+            progress = percentage;
+            progressBar.style.width = progress + '%';
+            statusEl.textContent = message;
+            log(message);
+        }
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `[${timestamp}] ${message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // 开始诊断
+        async function runDiagnostics() {
+            updateProgress(10, '开始诊断...');
+
+            // 检查基本功能
+            await delay(500);
+            updateProgress(25, '检查JavaScript环境...');
+
+            try {
+                // 测试基本JS功能
+                const test = () => 'test';
+                const [a, b] = [1, 2];
+                log('✅ JavaScript基础功能正常');
+            } catch (e) {
+                log('❌ JavaScript基础功能异常: ' + e.message);
+            }
+
+            await delay(500);
+            updateProgress(50, '检查网络连接...');
+
+            try {
+                // 测试网络
+                const response = await fetch('https://api.github.com/zen');
+                if (response.ok) {
+                    log('✅ 网络连接正常');
+                } else {
+                    log('⚠️ 网络连接异常');
+                }
+            } catch (e) {
+                log('❌ 网络连接失败: ' + e.message);
+            }
+
+            await delay(500);
+            updateProgress(75, '检查主应用文件...');
+
+            try {
+                // 检查app.js
+                const response = await fetch('app.js');
+                if (response.ok) {
+                    const size = response.headers.get('content-length') || '未知';
+                    log(`✅ 主应用文件可访问 (${size} bytes)`);
+                } else {
+                    log('❌ 主应用文件无法访问');
+                }
+            } catch (e) {
+                log('❌ 主应用文件检查失败: ' + e.message);
+            }
+
+            await delay(500);
+            updateProgress(100, '诊断完成');
+
+            // 总结
+            setTimeout(() => {
+                log('\n📋 诊断总结:');
+                log('- 如果所有项目都正常，可以尝试重新加载');
+                log('- 如果有异常，建议使用简化版平台');
+                log('- 需要详细信息可以使用诊断工具');
+            }, 1000);
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function tryDirectLoad() {
+            updateProgress(0, '正在重新加载...');
+            log('🔄 尝试直接加载正式版...');
+
+            try {
+                // 清除可能的缓存
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    log('✅ 浏览器缓存已清除');
+                }
+
+                // 清除localStorage
+                try {
+                    localStorage.clear();
+                    log('✅ 本地存储已清除');
+                } catch (e) {
+                    log('⚠️ 无法清除本地存储: ' + e.message);
+                }
+
+                updateProgress(50, '缓存清理完成...');
+                await delay(1000);
+
+                updateProgress(75, '检查网络连接...');
+
+                // 测试主应用文件是否可访问
+                try {
+                    const appTest = await fetch('app.js?' + Date.now());
+                    if (appTest.ok) {
+                        log('✅ 主应用文件可以访问');
+                        updateProgress(100, '准备重新加载正式版...');
+                        await delay(500);
+
+                        // 添加时间戳避免缓存
+                        const timestamp = Date.now();
+                        window.location.href = `index.html?t=${timestamp}`;
+                    } else {
+                        throw new Error('应用文件不可访问');
+                    }
+                } catch (e) {
+                    log('❌ 主应用文件检查失败，建议使用简化版');
+                    updateProgress(100, '建议使用简化版平台');
+
+                    setTimeout(() => {
+                        if (confirm('主应用无法正常加载，是否使用简化版平台？')) {
+                            window.location.href = 'simple.html';
+                        }
+                    }, 2000);
+                }
+
+            } catch (e) {
+                log('❌ 重新加载失败: ' + e.message);
+                updateProgress(100, '重新加载失败');
+            }
+        }
+
+        // 页面加载后自动开始诊断
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 1000);
+        });
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') {
+                window.location.href = 'simple.html';
+            } else if (e.key === '2') {
+                tryDirectLoad();
+            } else if (e.key === '3') {
+                window.location.href = 'debug.html';
+            }
+        });
+
+        log('🚀 快速修复工具已启动');
+        log('💡 提示: 按数字键1/2/3可快速选择选项');
+    </script>
+</body>
+</html>

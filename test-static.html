@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多智能体DSL框架 - 测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 3em;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin: 0;
+        }
+        .content {
+            padding: 60px 40px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+        .feature {
+            padding: 30px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+        .feature h3 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 1.4em;
+        }
+        .status {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        .status h2 {
+            color: #2e7d32;
+            margin: 0 0 10px 0;
+        }
+        .links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .link {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .link:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 多智能体DSL框架</h1>
+            <p>Multi-Agent DSL Framework - 企业级智能体协作平台</p>
+        </div>
+
+        <div class="content">
+            <div class="status">
+                <h2>✅ 网站已成功部署</h2>
+                <p>GitHub Pages 部署正常，静态资源加载成功</p>
+            </div>
+
+            <h2>🚀 核心特性</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>🧠 ATSLP - 自适应任务调度</h3>
+                    <p>智能任务分解与动态负载均衡，支持实时调度优化和资源自适应分配。</p>
+                </div>
+
+                <div class="feature">
+                    <h3>🤝 HCMPL - 层次化协作</h3>
+                    <p>多层级智能体协作机制，实现高效的任务协调和知识共享。</p>
+                </div>
+
+                <div class="feature">
+                    <h3>📚 CALK - 协作学习内核</h3>
+                    <p>分布式学习与知识融合，支持增量学习和经验迁移。</p>
+                </div>
+
+                <div class="feature">
+                    <h3>🔧 DSL 语言支持</h3>
+                    <p>专门设计的领域特定语言，简化多智能体系统的开发和配置。</p>
+                </div>
+            </div>
+
+            <h2>📋 项目状态</h2>
+            <p>当前版本：<strong>v1.0.0</strong></p>
+            <p>最后更新：<strong>2025年9月23日</strong></p>
+            <p>开发状态：<strong>活跃开发中</strong></p>
+
+            <div class="links">
+                <a href="https://github.com/Max-YUAN-22/Multi-Agent_DSLframework" class="link" target="_blank">
+                    📖 查看源码
+                </a>
+                <a href="docs/" class="link">
+                    📚 文档中心
+                </a>
+                <a href="web-demo/" class="link">
+                    🎮 在线演示
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('✅ 静态页面加载成功');
+        console.log('🚀 多智能体DSL框架 - GitHub Pages 部署正常');
+
+        // 检查是否能访问其他资源
+        fetch('./favicon.ico')
+            .then(() => console.log('✅ favicon.ico 加载成功'))
+            .catch(() => console.log('❌ favicon.ico 加载失败'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平台可用性测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        .test-result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 企业平台可用性测试</h1>
+
+        <div id="auto-status" class="status info">
+            正在自动检测平台状态...
+        </div>
+
+        <div class="test-result">
+            <h3>🔍 自动检测结果</h3>
+            <div id="auto-results">检测中...</div>
+        </div>
+
+        <div class="test-result">
+            <h3>🛠️ 手动测试工具</h3>
+            <button onclick="testBasicJS()">测试JavaScript</button>
+            <button onclick="testDOM()">测试DOM操作</button>
+            <button onclick="testStorage()">测试存储</button>
+            <button onclick="testNetwork()">测试网络</button>
+            <button onclick="clearResults()">清除结果</button>
+
+            <div id="manual-results" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="test-result">
+            <h3>📱 访问其他版本</h3>
+            <div style="text-align: center;">
+                <a href="index.html" style="display: inline-block; margin: 5px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 6px;">完整版平台</a>
+                <a href="simple.html" style="display: inline-block; margin: 5px; padding: 10px 20px; background: #17a2b8; color: white; text-decoration: none; border-radius: 6px;">简化版平台</a>
+                <a href="test.html" style="display: inline-block; margin: 5px; padding: 10px 20px; background: #ffc107; color: black; text-decoration: none; border-radius: 6px;">诊断工具</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>当前时间:</strong> <span id="current-time"></span></p>
+            <p><strong>用户代理:</strong> <span id="user-agent"></span></p>
+            <p><strong>页面URL:</strong> <span id="current-url"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时的信息
+        document.getElementById('current-time').textContent = new Date().toLocaleString();
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('current-url').textContent = window.location.href;
+
+        // 自动状态检测
+        function updateAutoStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('auto-status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function addAutoResult(message) {
+            const resultsDiv = document.getElementById('auto-results');
+            if (resultsDiv.textContent === '检测中...') {
+                resultsDiv.innerHTML = '';
+            }
+            resultsDiv.innerHTML += `<div style="margin: 5px 0;">${message}</div>`;
+        }
+
+        function addManualResult(message, isSuccess = true) {
+            const resultsDiv = document.getElementById('manual-results');
+            const className = isSuccess ? 'success' : 'error';
+            const icon = isSuccess ? '✅' : '❌';
+            resultsDiv.innerHTML += `<div class="status ${className}" style="margin: 5px 0; padding: 8px;">${icon} ${message}</div>`;
+        }
+
+        // 自动检测
+        window.addEventListener('load', function() {
+            updateAutoStatus('页面加载完成，开始检测...', 'success');
+
+            setTimeout(() => {
+                // 检测JavaScript基本功能
+                try {
+                    const test = [1, 2, 3].map(x => x * 2);
+                    addAutoResult('✅ JavaScript基础功能正常');
+                } catch (e) {
+                    addAutoResult('❌ JavaScript基础功能异常: ' + e.message);
+                }
+
+                // 检测DOM
+                try {
+                    const div = document.createElement('div');
+                    div.innerHTML = '<span>测试</span>';
+                    addAutoResult('✅ DOM操作正常');
+                } catch (e) {
+                    addAutoResult('❌ DOM操作异常: ' + e.message);
+                }
+
+                // 检测存储
+                try {
+                    localStorage.setItem('test', 'value');
+                    const retrieved = localStorage.getItem('test');
+                    localStorage.removeItem('test');
+                    if (retrieved === 'value') {
+                        addAutoResult('✅ 本地存储正常');
+                    } else {
+                        addAutoResult('❌ 本地存储数据不匹配');
+                    }
+                } catch (e) {
+                    addAutoResult('❌ 本地存储异常: ' + e.message);
+                }
+
+                // 检测网络功能
+                if (typeof fetch !== 'undefined') {
+                    addAutoResult('✅ Fetch API可用');
+                } else {
+                    addAutoResult('⚠️ Fetch API不可用');
+                }
+
+                // 检测现代功能
+                if (typeof Promise !== 'undefined') {
+                    addAutoResult('✅ Promise支持正常');
+                } else {
+                    addAutoResult('❌ Promise不支持');
+                }
+
+                updateAutoStatus('✅ 自动检测完成！基础功能正常，平台可以使用。', 'success');
+            }, 1000);
+        });
+
+        // 手动测试函数
+        function testBasicJS() {
+            try {
+                // 测试ES6特性
+                const arrow = () => 'test';
+                const [a, b] = [1, 2];
+                const template = `测试${arrow()}`;
+
+                // 测试对象操作
+                const obj = { name: '测试', getValue: function() { return this.name; } };
+
+                // 测试数组操作
+                const arr = [1, 2, 3].filter(x => x > 1).map(x => x * 2);
+
+                addManualResult(`JavaScript高级功能测试通过 - ES6: ${arrow()}, 解构: [${a},${b}], 模板: ${template}, 数组: [${arr.join(',')}]`);
+            } catch (error) {
+                addManualResult('JavaScript测试失败: ' + error.message, false);
+            }
+        }
+
+        function testDOM() {
+            try {
+                // 创建复杂DOM结构
+                const container = document.createElement('div');
+                container.innerHTML = `
+                    <h3>动态内容</h3>
+                    <p>这是通过JavaScript生成的内容</p>
+                    <button onclick="alert('DOM事件正常')">点击测试</button>
+                `;
+
+                // 添加样式
+                container.style.cssText = 'background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px;';
+
+                // 插入到页面
+                document.getElementById('manual-results').appendChild(container);
+
+                addManualResult('DOM操作测试通过 - 成功创建和插入复杂元素');
+            } catch (error) {
+                addManualResult('DOM测试失败: ' + error.message, false);
+            }
+        }
+
+        function testStorage() {
+            try {
+                // 测试复杂数据存储
+                const testData = {
+                    timestamp: Date.now(),
+                    user: { name: '测试用户', id: 123 },
+                    settings: { theme: 'dark', language: 'zh-CN' },
+                    array: [1, 2, 3, { nested: true }]
+                };
+
+                // 存储
+                localStorage.setItem('complex_test', JSON.stringify(testData));
+                sessionStorage.setItem('session_test', 'session_value');
+
+                // 读取
+                const retrievedLocal = JSON.parse(localStorage.getItem('complex_test'));
+                const retrievedSession = sessionStorage.getItem('session_test');
+
+                // 验证
+                const isValid = retrievedLocal.user.name === testData.user.name &&
+                              retrievedSession === 'session_value';
+
+                if (isValid) {
+                    addManualResult('存储测试通过 - localStorage和sessionStorage均正常工作');
+                } else {
+                    addManualResult('存储测试失败 - 数据验证不通过', false);
+                }
+
+                // 清理
+                localStorage.removeItem('complex_test');
+                sessionStorage.removeItem('session_test');
+
+            } catch (error) {
+                addManualResult('存储测试失败: ' + error.message, false);
+            }
+        }
+
+        function testNetwork() {
+            try {
+                // 测试fetch是否可用
+                if (typeof fetch === 'undefined') {
+                    addManualResult('网络测试跳过 - Fetch API不可用', false);
+                    return;
+                }
+
+                addManualResult('网络功能可用 - 正在测试实际请求...');
+
+                // 测试实际网络请求（使用GitHub API作为测试）
+                fetch('https://api.github.com/zen', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    addManualResult(`网络测试通过 - 成功获取数据: "${data.substring(0, 50)}..."`);
+                })
+                .catch(error => {
+                    addManualResult('网络请求失败: ' + error.message, false);
+                });
+
+            } catch (error) {
+                addManualResult('网络测试失败: ' + error.message, false);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('manual-results').innerHTML = '';
+            addManualResult('结果已清除，可以重新开始测试');
+        }
+
+        // 错误监听
+        window.addEventListener('error', function(e) {
+            addAutoResult(`❌ 全局错误: ${e.message} (${e.filename}:${e.lineno})`);
+        });
+
+        // 控制台信息
+        console.log('🧪 企业平台可用性测试页面已加载');
+        console.log('📊 用户代理:', navigator.userAgent);
+        console.log('🌐 页面URL:', window.location.href);
+        console.log('⏰ 加载时间:', new Date().toISOString());
+    </script>
+</body>
+</html>

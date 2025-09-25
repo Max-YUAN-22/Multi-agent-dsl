@@ -1,0 +1,62 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"/><link rel="icon" href="/Multi-agent-dsl/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#1976d2"/><meta name="description" content="企业级多智能体DSL框架 - 自适应调度与协作学习的创新解决方案"/><meta name="keywords" content="多智能体,DSL,ATSLP,HCMPL,CALK,智能调度,协作学习"/><link rel="apple-touch-icon" href="/Multi-agent-dsl/logo192.png"/><link rel="manifest" href="/Multi-agent-dsl/manifest.json"/><title>多智能体DSL框架 - Multi-Agent DSL Framework</title>
+
+<!-- 设置正确的 public path -->
+<script>
+window.__webpack_public_path__ = '/Multi-agent-dsl/';
+</script>
+
+<!-- GitHub Pages SPA 路由处理脚本 -->
+<script>
+  (function(l) {
+    if (l.search[1] === '/' ) {
+      var decoded = l.search.slice(1).split('&').map(function(s) {
+        return s.replace(/~and~/g, '&')
+      }).join('?');
+      window.history.replaceState(null, null,
+          l.pathname.slice(0, -1) + decoded + l.hash
+      );
+    }
+  }(window.location))
+</script>
+
+<script defer="defer" src="/Multi-agent-dsl/static/js/main.0ad0a150.js"></script></head><body><noscript>您需要启用JavaScript来运行此应用。</noscript><div id="root">
+<!-- 加载提示，防止白屏 -->
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
+  <div style="text-align: center;">
+    <div style="width: 50px; height: 50px; border: 3px solid #f3f3f3; border-top: 3px solid #1976d2; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+    <p style="color: #666; font-size: 16px;">正在加载React应用...</p>
+    <p style="color: #999; font-size: 14px; margin-top: 20px;">如果长时间加载不出，请尝试<a href="/Multi-agent-dsl/" style="color: #1976d2;">纯HTML版本</a></p>
+  </div>
+</div>
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<!-- 错误处理 -->
+<script>
+setTimeout(function() {
+  if (document.getElementById('root').children.length === 1) {
+    console.log('React应用加载可能失败，显示错误信息');
+    document.getElementById('root').innerHTML = `
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div style="text-align: center; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 500px;">
+          <h2 style="color: #333; margin-bottom: 20px;">⚠️ React应用加载异常</h2>
+          <p style="color: #666; margin-bottom: 30px;">React应用在GitHub Pages环境下可能遇到路径配置问题。</p>
+          <a href="/Multi-agent-dsl/" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            🏠 访问优化版本
+          </a>
+          <br><br>
+          <button onclick="location.reload()" style="background: #f0f0f0; color: #333; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+            🔄 重新尝试
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}, 5000);
+</script>
+
+</div></body></html>

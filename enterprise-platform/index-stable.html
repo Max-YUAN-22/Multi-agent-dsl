@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业级多智能体管理平台 - 稳定版</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-tab:hover {
+            background: #f0f2ff;
+            color: #667eea;
+        }
+
+        .nav-tab.active:hover {
+            background: #5a6fd8;
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f2ff;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.secondary:hover {
+            background: #5a6268;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .card-content {
+            margin-bottom: 20px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .card-actions .btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f2ff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list i {
+            color: #667eea;
+            width: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 企业级多智能体管理平台</h1>
+        <p>稳定版 - 完整功能展示</p>
+    </div>
+
+    <div class="container">
+        <div class="success-message">
+            <i class="fas fa-check-circle"></i>
+            平台已成功启动！所有功能模块运行正常。
+        </div>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('dashboard')">
+                <i class="fas fa-tachometer-alt"></i> 仪表板
+            </button>
+            <button class="nav-tab" onclick="showSection('agents')">
+                <i class="fas fa-robot"></i> 智能体管理
+            </button>
+            <button class="nav-tab" onclick="showSection('tasks')">
+                <i class="fas fa-tasks"></i> 任务调度
+            </button>
+            <button class="nav-tab" onclick="showSection('monitoring')">
+                <i class="fas fa-chart-line"></i> 实时监控
+            </button>
+            <button class="nav-tab" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i> 系统设置
+            </button>
+        </nav>
+
+        <!-- 仪表板 -->
+        <section id="dashboard" class="content-section active">
+            <div class="section-header">
+                <h2 class="section-title">系统仪表板</h2>
+                <button class="btn" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt"></i> 刷新数据
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">24</div>
+                    <div class="stat-label">活跃智能体</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">运行中任务</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">98.7%</div>
+                    <div class="stat-label">成功率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2.3K</div>
+                    <div class="stat-label">每小时吞吐量</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> 平台状态</h3>
+                <p>所有核心服务运行正常，系统性能良好。最近24小时内处理任务 <strong>12,847</strong> 个，平均响应时间 <strong>1.2秒</strong>。</p>
+            </div>
+        </section>
+
+        <!-- 智能体管理 -->
+        <section id="agents" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">智能体管理</h2>
+                <div>
+                    <button class="btn" onclick="createAgent()">
+                        <i class="fas fa-plus"></i> 创建智能体
+                    </button>
+                    <button class="btn secondary" onclick="importAgents()">
+                        <i class="fas fa-upload"></i> 批量导入
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">DataProcessor-01</div>
+                            <div class="card-subtitle">数据处理器 · 运行中</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p><strong>CPU:</strong> 45% | <strong>内存:</strong> 1.2GB | <strong>任务:</strong> 23个</p>
+                        <p>专门处理大数据清洗和特征提取任务</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="configureAgent('DataProcessor-01')">
+                            <i class="fas fa-cog"></i> 配置
+                        </button>
+                        <button class="btn secondary" onclick="monitorAgent('DataProcessor-01')">
+                            <i class="fas fa-chart-line"></i> 监控
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">TaskScheduler-01</div>
+                            <div class="card-subtitle">任务调度器 · 运行中</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p><strong>CPU:</strong> 28% | <strong>内存:</strong> 856MB | <strong>任务:</strong> 67个</p>
+                        <p>负责任务分发和负载均衡管理</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="configureAgent('TaskScheduler-01')">
+                            <i class="fas fa-cog"></i> 配置
+                        </button>
+                        <button class="btn secondary" onclick="monitorAgent('TaskScheduler-01')">
+                            <i class="fas fa-chart-line"></i> 监控
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">KnowledgeWorker-01</div>
+                            <div class="card-subtitle">知识工作者 · 空闲</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p><strong>CPU:</strong> 8% | <strong>内存:</strong> 512MB | <strong>任务:</strong> 0个</p>
+                        <p>智能文档处理和知识图谱构建</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="configureAgent('KnowledgeWorker-01')">
+                            <i class="fas fa-cog"></i> 配置
+                        </button>
+                        <button class="btn secondary" onclick="startAgent('KnowledgeWorker-01')">
+                            <i class="fas fa-play"></i> 启动
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">Coordinator-01</div>
+                            <div class="card-subtitle">协调器 · 忙碌</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p><strong>CPU:</strong> 78% | <strong>内存:</strong> 2.1GB | <strong>任务:</strong> 89个</p>
+                        <p>多智能体协作和工作流管理</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="configureAgent('Coordinator-01')">
+                            <i class="fas fa-cog"></i> 配置
+                        </button>
+                        <button class="btn secondary" onclick="monitorAgent('Coordinator-01')">
+                            <i class="fas fa-chart-line"></i> 监控
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 任务调度 -->
+        <section id="tasks" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">任务调度</h2>
+                <div>
+                    <button class="btn" onclick="createTask()">
+                        <i class="fas fa-plus"></i> 新建任务
+                    </button>
+                    <button class="btn secondary" onclick="importTasks()">
+                        <i class="fas fa-upload"></i> 批量导入
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">34</div>
+                    <div class="stat-label">等待中</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">执行中</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1,248</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">失败</div>
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #28a745;">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">数据清洗任务 #1247</div>
+                            <div class="card-subtitle">高优先级 · 运行中</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p>清洗用户行为数据，提取关键特征</p>
+                        <p><strong>智能体:</strong> DataProcessor-01 | <strong>进度:</strong> 65%</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="viewTask('1247')">
+                            <i class="fas fa-eye"></i> 查看
+                        </button>
+                        <button class="btn secondary" onclick="pauseTask('1247')">
+                            <i class="fas fa-pause"></i> 暂停
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #ffc107;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">模型训练任务 #1248</div>
+                            <div class="card-subtitle">中优先级 · 等待中</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p>训练用户画像预测模型</p>
+                        <p><strong>智能体:</strong> 等待分配 | <strong>进度:</strong> 0%</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="viewTask('1248')">
+                            <i class="fas fa-eye"></i> 查看
+                        </button>
+                        <button class="btn secondary" onclick="prioritizeTask('1248')">
+                            <i class="fas fa-arrow-up"></i> 优先
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #17a2b8;">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">报告生成任务 #1246</div>
+                            <div class="card-subtitle">低优先级 · 已完成</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p>生成月度运营分析报告</p>
+                        <p><strong>智能体:</strong> KnowledgeWorker-01 | <strong>进度:</strong> 100%</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="downloadResult('1246')">
+                            <i class="fas fa-download"></i> 下载
+                        </button>
+                        <button class="btn secondary" onclick="rerunTask('1246')">
+                            <i class="fas fa-redo"></i> 重跑
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 实时监控 -->
+        <section id="monitoring" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">实时监控</h2>
+                <button class="btn" onclick="refreshMonitoring()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #28a745;">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">系统资源</div>
+                            <div class="card-subtitle">实时监控</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <ul class="feature-list">
+                            <li><i class="fas fa-microchip"></i> CPU使用率: 67%</li>
+                            <li><i class="fas fa-memory"></i> 内存使用: 4.8GB / 8GB</li>
+                            <li><i class="fas fa-hdd"></i> 磁盘使用: 234GB / 500GB</li>
+                            <li><i class="fas fa-network-wired"></i> 网络流量: 245MB/s</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #667eea;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">性能指标</div>
+                            <div class="card-subtitle">过去24小时</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <ul class="feature-list">
+                            <li><i class="fas fa-tachometer-alt"></i> 平均响应时间: 1.2s</li>
+                            <li><i class="fas fa-check-circle"></i> 成功率: 98.7%</li>
+                            <li><i class="fas fa-tasks"></i> 处理任务数: 12,847</li>
+                            <li><i class="fas fa-exclamation-triangle"></i> 错误数: 23</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 系统设置 -->
+        <section id="settings" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">系统设置</h2>
+                <button class="btn" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> 保存设置
+                </button>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #6f42c1;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">安全设置</div>
+                            <div class="card-subtitle">访问控制与认证</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> 双因子认证已启用</li>
+                            <li><i class="fas fa-check"></i> API访问密钥轮换</li>
+                            <li><i class="fas fa-check"></i> 审计日志记录</li>
+                            <li><i class="fas fa-check"></i> 防火墙规则配置</li>
+                        </ul>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="configureSecurity()">
+                            <i class="fas fa-cog"></i> 配置
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #fd7e14;">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">性能调优</div>
+                            <div class="card-subtitle">系统优化配置</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <ul class="feature-list">
+                            <li><i class="fas fa-rocket"></i> 最大并发数: 100</li>
+                            <li><i class="fas fa-clock"></i> 任务超时: 30分钟</li>
+                            <li><i class="fas fa-redo"></i> 重试次数: 3次</li>
+                            <li><i class="fas fa-memory"></i> 内存阈值: 80%</li>
+                        </ul>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="optimizePerformance()">
+                            <i class="fas fa-magic"></i> 优化
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        console.log('🚀 稳定版平台启动成功！');
+
+        // 标签页切换
+        function showSection(sectionId) {
+            // 隐藏所有内容
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 移除所有标签的active类
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 显示指定内容
+            document.getElementById(sectionId).classList.add('active');
+
+            // 激活对应标签
+            event.target.classList.add('active');
+
+            showNotification(`已切换到: ${event.target.textContent.trim()}`, 'info');
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            // 创建通知容器（如果不存在）
+            let container = document.getElementById('notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'notification-container';
+                container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;';
+                document.body.appendChild(container);
+            }
+
+            const notification = document.createElement('div');
+            const colors = {
+                success: '#d4edda',
+                error: '#f8d7da',
+                warning: '#fff3cd',
+                info: '#d1ecf1'
+            };
+
+            const textColors = {
+                success: '#155724',
+                error: '#721c24',
+                warning: '#856404',
+                info: '#0c5460'
+            };
+
+            notification.style.cssText = `
+                background: ${colors[type] || colors.info};
+                color: ${textColors[type] || textColors.info};
+                padding: 15px 20px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                max-width: 400px;
+                word-wrap: break-word;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+
+            notification.textContent = message;
+            container.appendChild(notification);
+
+            // 动画显示
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // 自动隐藏
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (container.contains(notification)) {
+                        container.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // 功能函数
+        function refreshDashboard() {
+            showNotification('📊 仪表板数据已刷新', 'success');
+        }
+
+        function createAgent() {
+            showNotification('🤖 创建智能体：请填写名称、类型和配置参数', 'info');
+        }
+
+        function configureAgent(agentId) {
+            showNotification(`⚙️ 配置智能体: ${agentId} - 可调整CPU、内存、并发数等参数`, 'info');
+        }
+
+        function monitorAgent(agentId) {
+            showNotification(`📊 监控智能体: ${agentId} - 查看实时性能指标`, 'info');
+        }
+
+        function startAgent(agentId) {
+            showNotification(`▶️ 启动智能体: ${agentId} - 开始接收任务`, 'success');
+        }
+
+        function createTask() {
+            showNotification('📋 创建任务：请设置任务名称、类型、优先级和执行参数', 'info');
+        }
+
+        function viewTask(taskId) {
+            showNotification(`👁️ 查看任务 #${taskId} - 显示详细信息和执行日志`, 'info');
+        }
+
+        function pauseTask(taskId) {
+            showNotification(`⏸️ 任务 #${taskId} 已暂停`, 'warning');
+        }
+
+        function prioritizeTask(taskId) {
+            showNotification(`⏫ 任务 #${taskId} 优先级已提升`, 'success');
+        }
+
+        function downloadResult(taskId) {
+            showNotification(`📥 下载任务 #${taskId} 执行结果`, 'success');
+        }
+
+        function rerunTask(taskId) {
+            showNotification(`🔄 重新执行任务 #${taskId}`, 'info');
+        }
+
+        function refreshMonitoring() {
+            showNotification('🔄 监控数据已刷新 - 显示最新系统状态', 'success');
+        }
+
+        function saveSettings() {
+            showNotification('💾 系统设置已保存', 'success');
+        }
+
+        function configureSecurity() {
+            showNotification('🔒 安全设置：配置用户权限、API密钥和访问控制', 'info');
+        }
+
+        function optimizePerformance() {
+            showNotification('🚀 性能优化：调整并发数、超时时间和资源分配', 'info');
+        }
+
+        function importAgents() {
+            showNotification('📥 批量导入智能体：支持CSV、JSON格式文件', 'info');
+        }
+
+        function importTasks() {
+            showNotification('📥 批量导入任务：支持任务模板和批量创建', 'info');
+        }
+
+        // 启动通知
+        setTimeout(() => {
+            showNotification('🎉 企业级多智能体管理平台已就绪！', 'success');
+        }, 500);
+
+        console.log('✅ 所有功能已加载完成');
+    </script>
+</body>
+</html>

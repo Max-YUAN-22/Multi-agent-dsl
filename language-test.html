@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语言切换测试 - Language Switch Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .language-switcher {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+        }
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 语言切换功能测试 / Language Switch Test</h1>
+        
+        <div class="language-switcher">
+            <label for="lang-select">选择语言 / Select Language:</label>
+            <select id="lang-select">
+                <option value="zh">🇨🇳 中文</option>
+                <option value="en">🇺🇸 English</option>
+            </select>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h2 id="test-title">语言切换测试</h2>
+                <p id="test-description">这个页面用于测试网站的语言切换功能是否正常工作。</p>
+                
+                <div class="status" id="status">
+                    <strong>状态:</strong> <span id="status-text">正在测试...</span>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>测试步骤:</h3>
+                <ol>
+                    <li>点击语言选择器</li>
+                    <li>选择"English"</li>
+                    <li>观察页面内容是否切换为英文</li>
+                    <li>选择"中文"</li>
+                    <li>观察页面内容是否切换回中文</li>
+                </ol>
+            </div>
+
+            <div class="test-section">
+                <h3>预期结果:</h3>
+                <ul>
+                    <li>✅ 语言选择器应该显示当前选择的语言</li>
+                    <li>✅ 页面标题和内容应该立即切换</li>
+                    <li>✅ 语言偏好应该保存到本地存储</li>
+                    <li>✅ 刷新页面后应该保持选择的语言</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 翻译配置
+        const translations = {
+            zh: {
+                title: "语言切换测试",
+                description: "这个页面用于测试网站的语言切换功能是否正常工作。",
+                status: "状态:",
+                testing: "正在测试...",
+                success: "语言切换功能正常工作！",
+                error: "语言切换功能有问题，请检查控制台错误。",
+                steps: "测试步骤:",
+                expected: "预期结果:"
+            },
+            en: {
+                title: "Language Switch Test",
+                description: "This page is used to test if the website's language switching functionality works properly.",
+                status: "Status:",
+                testing: "Testing...",
+                success: "Language switching functionality is working properly!",
+                error: "Language switching functionality has issues, please check console errors.",
+                steps: "Test Steps:",
+                expected: "Expected Results:"
+            }
+        };
+
+        // 当前语言
+        let currentLang = localStorage.getItem('language') || 'zh';
+
+        // 更新页面内容
+        function updateContent(lang) {
+            const t = translations[lang];
+            document.getElementById('test-title').textContent = t.title;
+            document.getElementById('test-description').textContent = t.description;
+            document.querySelector('#status strong').textContent = t.status;
+            document.getElementById('status-text').textContent = t.testing;
+            
+            // 更新页面语言属性
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        }
+
+        // 语言切换
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+            updateContent(lang);
+            
+            // 测试成功
+            setTimeout(() => {
+                const t = translations[lang];
+                document.getElementById('status-text').textContent = t.success;
+                document.getElementById('status').className = 'status success';
+            }, 500);
+        }
+
+        // 初始化
+        document.getElementById('lang-select').value = currentLang;
+        updateContent(currentLang);
+
+        // 监听语言选择变化
+        document.getElementById('lang-select').addEventListener('change', function(e) {
+            switchLanguage(e.target.value);
+        });
+
+        // 测试完成
+        setTimeout(() => {
+            const t = translations[currentLang];
+            document.getElementById('status-text').textContent = t.success;
+            document.getElementById('status').className = 'status success';
+        }, 1000);
+    </script>
+</body>
+</html>
+

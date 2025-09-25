@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <link rel="icon" href="/Multi-Agent_DSLframework/favicon.ico"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="theme-color" content="#1976d2"/>
+    <title>多智能体DSL框架 - Multi-Agent DSL Framework</title>
+    <script defer="defer" src="/Multi-Agent_DSLframework/static/js/main.6fb8e71d.js"></script>
+</head>
+<body>
+    <noscript>您需要启用JavaScript来运行此应用。</noscript>
+    <div id="root"></div>
+
+    <!-- GitHub Pages SPA 路由处理 -->
+    <script>
+        // 处理 GitHub Pages 的 SPA 路由问题
+        (function(l) {
+            if (l.search[1] === '/' ) {
+                var decoded = l.search.slice(1).split('&').map(function(s) {
+                    return s.replace(/~and~/g, '&')
+                }).join('?');
+                window.history.replaceState(null, null,
+                    l.pathname.slice(0, -1) + decoded + l.hash
+                );
+            }
+        }(window.location))
+    </script>
+</body>
+</html>

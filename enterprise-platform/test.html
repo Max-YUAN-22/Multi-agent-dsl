@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业平台测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 企业平台诊断测试</h1>
+
+        <div id="status-container">
+            <div class="status info">正在运行诊断测试...</div>
+        </div>
+
+        <h3>🔧 操作测试</h3>
+        <button onclick="testBasicFunctionality()">测试基本功能</button>
+        <button onclick="testDOMAccess()">测试DOM访问</button>
+        <button onclick="testLocalStorage()">测试本地存储</button>
+        <button onclick="loadMainApp()">加载主应用</button>
+
+        <h3>📋 测试结果</h3>
+        <div id="test-results"></div>
+
+        <h3>🔗 快速链接</h3>
+        <a href="index.html" style="display: inline-block; margin: 5px; padding: 10px; background: #28a745; color: white; text-decoration: none; border-radius: 4px;">返回主应用</a>
+    </div>
+
+    <script>
+        const statusContainer = document.getElementById('status-container');
+        const resultsContainer = document.getElementById('test-results');
+
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            statusContainer.appendChild(div);
+        }
+
+        function addResult(test, result, details = '') {
+            const div = document.createElement('div');
+            div.className = `status ${result ? 'success' : 'error'}`;
+            div.innerHTML = `<strong>${test}:</strong> ${result ? '✅ 通过' : '❌ 失败'} ${details}`;
+            resultsContainer.appendChild(div);
+        }
+
+        // 启动时自动运行基本测试
+        window.addEventListener('load', function() {
+            addStatus('页面加载完成', 'success');
+            runAutoTests();
+        });
+
+        function runAutoTests() {
+            // 测试 JavaScript 基本功能
+            try {
+                const testObj = { test: true };
+                const testArray = [1, 2, 3];
+                addResult('JavaScript基本功能', true, '- 对象和数组创建正常');
+            } catch (error) {
+                addResult('JavaScript基本功能', false, `- 错误: ${error.message}`);
+            }
+
+            // 测试 DOM 操作
+            try {
+                const testDiv = document.createElement('div');
+                testDiv.style.display = 'none';
+                document.body.appendChild(testDiv);
+                document.body.removeChild(testDiv);
+                addResult('DOM操作', true, '- 元素创建和删除正常');
+            } catch (error) {
+                addResult('DOM操作', false, `- 错误: ${error.message}`);
+            }
+
+            // 测试 localStorage
+            try {
+                localStorage.setItem('test_key', 'test_value');
+                const retrieved = localStorage.getItem('test_key');
+                localStorage.removeItem('test_key');
+                addResult('本地存储', retrieved === 'test_value', retrieved === 'test_value' ? '- 读写正常' : '- 数据不匹配');
+            } catch (error) {
+                addResult('本地存储', false, `- 错误: ${error.message}`);
+            }
+
+            // 测试 Fetch API
+            try {
+                if (typeof fetch !== 'undefined') {
+                    addResult('Fetch API', true, '- API可用');
+                } else {
+                    addResult('Fetch API', false, '- API不可用');
+                }
+            } catch (error) {
+                addResult('Fetch API', false, `- 错误: ${error.message}`);
+            }
+
+            // 测试控制台
+            try {
+                console.log('诊断测试 - 控制台工作正常');
+                addResult('控制台输出', true, '- 查看浏览器控制台确认');
+            } catch (error) {
+                addResult('控制台输出', false, `- 错误: ${error.message}`);
+            }
+
+            addStatus('自动诊断完成', 'success');
+        }
+
+        function testBasicFunctionality() {
+            addStatus('测试基本功能...', 'info');
+
+            // 测试现代JavaScript特性
+            try {
+                // ES6 特性测试
+                const arrow = () => 'arrow function works';
+                const [a, b] = [1, 2]; // 解构
+                const template = `Template literal: ${arrow()}`;
+
+                addResult('ES6特性', true, '- 箭头函数、解构、模板字符串正常');
+            } catch (error) {
+                addResult('ES6特性', false, `- 错误: ${error.message}`);
+            }
+
+            // 测试异步功能
+            Promise.resolve('async test')
+                .then(result => {
+                    addResult('Promise支持', true, '- Promise.resolve工作正常');
+                })
+                .catch(error => {
+                    addResult('Promise支持', false, `- 错误: ${error.message}`);
+                });
+        }
+
+        function testDOMAccess() {
+            addStatus('测试DOM访问...', 'info');
+
+            // 测试查询选择器
+            try {
+                const body = document.querySelector('body');
+                const title = document.querySelector('h1');
+                addResult('查询选择器', body && title, body && title ? '- querySelector正常' : '- 无法找到元素');
+            } catch (error) {
+                addResult('查询选择器', false, `- 错误: ${error.message}`);
+            }
+
+            // 测试事件监听
+            try {
+                const testBtn = document.createElement('button');
+                testBtn.addEventListener('click', function() {});
+                addResult('事件监听', true, '- addEventListener正常');
+            } catch (error) {
+                addResult('事件监听', false, `- 错误: ${error.message}`);
+            }
+        }
+
+        function testLocalStorage() {
+            addStatus('测试本地存储...', 'info');
+
+            try {
+                // 清理测试数据
+                localStorage.removeItem('diagnostic_test');
+
+                // 写入测试
+                const testData = {
+                    timestamp: Date.now(),
+                    test: '诊断测试数据',
+                    array: [1, 2, 3],
+                    nested: { value: 'nested data' }
+                };
+
+                localStorage.setItem('diagnostic_test', JSON.stringify(testData));
+
+                // 读取测试
+                const retrieved = JSON.parse(localStorage.getItem('diagnostic_test'));
+
+                const success = retrieved &&
+                    retrieved.test === testData.test &&
+                    retrieved.array.length === 3 &&
+                    retrieved.nested.value === 'nested data';
+
+                addResult('复杂数据存储', success, success ? '- JSON序列化/反序列化正常' : '- 数据验证失败');
+
+                // 清理
+                localStorage.removeItem('diagnostic_test');
+
+            } catch (error) {
+                addResult('复杂数据存储', false, `- 错误: ${error.message}`);
+            }
+        }
+
+        function loadMainApp() {
+            addStatus('尝试加载主应用...', 'info');
+
+            try {
+                // 创建iframe测试主应用加载
+                const iframe = document.createElement('iframe');
+                iframe.src = 'index.html';
+                iframe.style.width = '100%';
+                iframe.style.height = '400px';
+                iframe.style.border = '1px solid #ddd';
+                iframe.style.borderRadius = '4px';
+                iframe.style.marginTop = '10px';
+
+                iframe.onload = function() {
+                    addResult('主应用加载', true, '- iframe加载成功');
+                };
+
+                iframe.onerror = function() {
+                    addResult('主应用加载', false, '- iframe加载失败');
+                };
+
+                document.querySelector('.test-container').appendChild(iframe);
+                addStatus('主应用iframe已创建', 'info');
+
+            } catch (error) {
+                addResult('主应用加载', false, `- 错误: ${error.message}`);
+            }
+        }
+
+        // 错误捕获
+        window.addEventListener('error', function(e) {
+            addStatus(`全局错误: ${e.message} (${e.filename}:${e.lineno})`, 'error');
+        });
+
+        // 未处理的Promise拒绝
+        window.addEventListener('unhandledrejection', function(e) {
+            addStatus(`未处理的Promise拒绝: ${e.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多智能体DSL框架 - 企业级管理平台</title>
+    <!-- 预加载外部资源提示 -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+
+    <!-- 核心CSS - 优先加载 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- 可选CSS - 延迟加载 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css" rel="stylesheet" media="print" onload="this.media='all'">
+
+    <!-- JavaScript库 - 异步加载 -->
+    <script>
+        // 异步加载外部脚本，不阻塞页面渲染
+        function loadScriptAsync(src, callback) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = callback;
+            script.onerror = () => console.warn('Failed to load:', src);
+            document.head.appendChild(script);
+        }
+
+        // 页面加载完成后再加载非关键脚本
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🔄 页面DOM加载完成，开始异步加载外部资源...');
+
+            // Monaco编辑器 - 延迟加载
+            setTimeout(() => {
+                loadScriptAsync('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.js', () => {
+                    console.log('✅ Monaco loader已加载');
+                });
+            }, 1000);
+
+            // Chart.js - 延迟加载
+            setTimeout(() => {
+                loadScriptAsync('https://cdn.jsdelivr.net/npm/chart.js', () => {
+                    console.log('✅ Chart.js已加载');
+                    window.dispatchEvent(new CustomEvent('chartjs-loaded'));
+                });
+            }, 1500);
+
+            // Socket.IO - 延迟加载（用于实时功能）
+            setTimeout(() => {
+                loadScriptAsync('https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js', () => {
+                    console.log('✅ Socket.IO已加载');
+                });
+            }, 2000);
+        });
+    </script>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* 加载状态样式 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-icon {
+            font-size: 64px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .loading-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .loading-progress {
+            width: 300px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .loading-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #fff, rgba(255,255,255,0.8));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .loading-status {
+            font-size: 14px;
+            opacity: 0.7;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* 跳过加载按钮样式 */
+        .skip-loading {
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .skip-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .skip-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 确保主内容在加载完成前不可见 */
+        .main-app {
+            display: none;
+        }
+
+        .main-app.loaded {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载覆盖层 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-icon">🤖</div>
+        <div class="loading-text">企业级多智能体管理平台</div>
+        <div class="loading-subtitle">正在初始化智能化协作环境...</div>
+        <div class="loading-progress">
+            <div id="loading-progress-bar" class="loading-progress-bar"></div>
+        </div>
+        <div id="loading-status" class="loading-status">准备启动...</div>
+        <div id="skip-loading" class="skip-loading" style="display: none;">
+            <button onclick="skipToSimple()" class="skip-btn">跳过加载，使用简化版</button>
+        </div>
+    </div>
+
+    <!-- 主应用内容 -->
+    <div class="main-app" id="main-app">
+    <!-- 侧边栏导航 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>智能体平台</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <h3>控制台</h3>
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>仪表板</span>
+                </a>
+                <a href="#agents" class="nav-item" data-section="agents">
+                    <i class="fas fa-robot"></i>
+                    <span>智能体管理</span>
+                </a>
+                <a href="#tasks" class="nav-item" data-section="tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span>任务调度</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3>开发工具</h3>
+                <a href="#dsl-editor" class="nav-item" data-section="dsl-editor">
+                    <i class="fas fa-code"></i>
+                    <span>DSL编辑器</span>
+                </a>
+                <a href="#api-console" class="nav-item" data-section="api-console">
+                    <i class="fas fa-terminal"></i>
+                    <span>API控制台</span>
+                </a>
+                <a href="#workflow" class="nav-item" data-section="workflow">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>工作流设计</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3>监控分析</h3>
+                <a href="#monitoring" class="nav-item" data-section="monitoring">
+                    <i class="fas fa-chart-line"></i>
+                    <span>实时监控</span>
+                </a>
+                <a href="#logs" class="nav-item" data-section="logs">
+                    <i class="fas fa-file-alt"></i>
+                    <span>日志分析</span>
+                </a>
+                <a href="#performance" class="nav-item" data-section="performance">
+                    <i class="fas fa-cogs"></i>
+                    <span>性能优化</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <h3>企业功能</h3>
+                <a href="#knowledge-base" class="nav-item" data-section="knowledge-base">
+                    <i class="fas fa-database"></i>
+                    <span>知识库管理</span>
+                </a>
+                <a href="#collaboration" class="nav-item" data-section="collaboration">
+                    <i class="fas fa-users"></i>
+                    <span>团队协作</span>
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>系统设置</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <!-- 顶部工具栏 -->
+        <header class="toolbar">
+            <div class="toolbar-left">
+                <button class="btn-icon" id="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <span id="current-section">仪表板</span>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="system-status">
+                    <span class="status-indicator online"></span>
+                    <span>系统在线</span>
+                </div>
+                <button class="btn-icon notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff" alt="用户头像" class="avatar">
+                    <span>管理员</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- 仪表板页面 -->
+        <section id="dashboard" class="content-section active">
+            <div class="dashboard-grid">
+                <!-- 统计卡片 -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon agents">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="active-agents">24</h3>
+                            <p>活跃智能体</p>
+                            <small class="stat-change positive">+3 今日新增</small>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon tasks">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="running-tasks">156</h3>
+                            <p>运行中任务</p>
+                            <small class="stat-change positive">98.7% 成功率</small>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon performance">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="throughput">2.3K</h3>
+                            <p>任务吞吐量/小时</p>
+                            <small class="stat-change positive">+15.2% 本周</small>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon resources">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="resource-usage">67%</h3>
+                            <p>资源使用率</p>
+                            <small class="stat-change neutral">正常范围</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实时图表区域 -->
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h3>系统性能监控</h3>
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>智能体状态分布</h3>
+                        <canvas id="agent-status-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 活动列表 -->
+                <div class="activity-panel">
+                    <h3>实时活动</h3>
+                    <div class="activity-list" id="activity-list">
+                        <!-- 活动项会通过JavaScript动态添加 -->
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="quick-actions">
+                    <h3>快速操作</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="createNewAgent()">
+                            <i class="fas fa-plus"></i>
+                            <span>创建智能体</span>
+                        </button>
+                        <button class="action-btn secondary" onclick="deployWorkflow()">
+                            <i class="fas fa-rocket"></i>
+                            <span>部署工作流</span>
+                        </button>
+                        <button class="action-btn secondary" onclick="runDiagnostic()">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>系统诊断</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 智能体管理页面 -->
+        <section id="agents" class="content-section">
+            <div class="page-header">
+                <h2>智能体管理</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="createNewAgent()">
+                        <i class="fas fa-plus"></i>
+                        创建智能体
+                    </button>
+                    <button class="btn secondary" onclick="importAgents()">
+                        <i class="fas fa-upload"></i>
+                        批量导入
+                    </button>
+                </div>
+            </div>
+
+            <div class="agents-filter">
+                <div class="filter-controls">
+                    <select id="agent-type-filter">
+                        <option value="all">全部类型</option>
+                        <option value="data-processor">数据处理</option>
+                        <option value="task-scheduler">任务调度</option>
+                        <option value="knowledge-worker">知识工作</option>
+                        <option value="coordinator">协调器</option>
+                    </select>
+                    <select id="agent-status-filter">
+                        <option value="all">全部状态</option>
+                        <option value="active">运行中</option>
+                        <option value="idle">空闲</option>
+                        <option value="busy">忙碌</option>
+                        <option value="offline">离线</option>
+                    </select>
+                    <input type="text" placeholder="搜索智能体..." id="agent-search">
+                </div>
+            </div>
+
+            <div class="agents-grid" id="agents-grid">
+                <!-- 数据处理智能体 -->
+                <div class="agent-card active">
+                    <div class="agent-header">
+                        <div class="agent-avatar">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="agent-info">
+                            <h3>DataProcessor-01</h3>
+                            <span class="agent-type">数据处理</span>
+                        </div>
+                        <div class="agent-status running">
+                            <span class="status-indicator"></span>
+                            运行中
+                        </div>
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <span class="metric-label">CPU</span>
+                            <span class="metric-value">45%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">内存</span>
+                            <span class="metric-value">1.2GB</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">任务</span>
+                            <span class="metric-value">23</span>
+                        </div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="btn-icon" title="配置" onclick="configureAgent('DataProcessor-01')">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="btn-icon" title="监控" onclick="monitorAgent('DataProcessor-01')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn-icon" title="停止" onclick="stopAgent('DataProcessor-01')">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 任务调度智能体 -->
+                <div class="agent-card active">
+                    <div class="agent-header">
+                        <div class="agent-avatar">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="agent-info">
+                            <h3>TaskScheduler-01</h3>
+                            <span class="agent-type">任务调度</span>
+                        </div>
+                        <div class="agent-status running">
+                            <span class="status-indicator"></span>
+                            运行中
+                        </div>
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <span class="metric-label">CPU</span>
+                            <span class="metric-value">28%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">内存</span>
+                            <span class="metric-value">856MB</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">任务</span>
+                            <span class="metric-value">67</span>
+                        </div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="btn-icon" title="配置" onclick="configureAgent('TaskScheduler-01')">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="btn-icon" title="监控" onclick="monitorAgent('TaskScheduler-01')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn-icon" title="停止" onclick="stopAgent('TaskScheduler-01')">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 知识工作智能体 -->
+                <div class="agent-card idle">
+                    <div class="agent-header">
+                        <div class="agent-avatar">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="agent-info">
+                            <h3>KnowledgeWorker-01</h3>
+                            <span class="agent-type">知识工作</span>
+                        </div>
+                        <div class="agent-status idle">
+                            <span class="status-indicator"></span>
+                            空闲
+                        </div>
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <span class="metric-label">CPU</span>
+                            <span class="metric-value">8%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">内存</span>
+                            <span class="metric-value">512MB</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">任务</span>
+                            <span class="metric-value">0</span>
+                        </div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="btn-icon" title="配置" onclick="configureAgent('KnowledgeWorker-01')">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="btn-icon" title="监控" onclick="monitorAgent('KnowledgeWorker-01')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn-icon" title="启动" onclick="startAgent('KnowledgeWorker-01')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 协调器智能体 -->
+                <div class="agent-card active">
+                    <div class="agent-header">
+                        <div class="agent-avatar">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="agent-info">
+                            <h3>Coordinator-01</h3>
+                            <span class="agent-type">协调器</span>
+                        </div>
+                        <div class="agent-status busy">
+                            <span class="status-indicator"></span>
+                            忙碌
+                        </div>
+                    </div>
+                    <div class="agent-metrics">
+                        <div class="metric">
+                            <span class="metric-label">CPU</span>
+                            <span class="metric-value">78%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">内存</span>
+                            <span class="metric-value">2.1GB</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">任务</span>
+                            <span class="metric-value">89</span>
+                        </div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="btn-icon" title="配置" onclick="configureAgent('Coordinator-01')">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="btn-icon" title="监控" onclick="monitorAgent('Coordinator-01')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn-icon" title="停止" onclick="stopAgent('Coordinator-01')">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 任务调度页面 -->
+        <section id="tasks" class="content-section">
+            <div class="page-header">
+                <h2>任务调度</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="createNewTask()">
+                        <i class="fas fa-plus"></i>
+                        新建任务
+                    </button>
+                    <button class="btn secondary" onclick="importTasks()">
+                        <i class="fas fa-upload"></i>
+                        批量导入
+                    </button>
+                </div>
+            </div>
+
+            <div class="task-overview">
+                <div class="task-stats">
+                    <div class="task-stat pending">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <span class="number">34</span>
+                            <span class="label">等待中</span>
+                        </div>
+                    </div>
+                    <div class="task-stat running">
+                        <i class="fas fa-play"></i>
+                        <div>
+                            <span class="number">156</span>
+                            <span class="label">执行中</span>
+                        </div>
+                    </div>
+                    <div class="task-stat completed">
+                        <i class="fas fa-check"></i>
+                        <div>
+                            <span class="number">1,248</span>
+                            <span class="label">已完成</span>
+                        </div>
+                    </div>
+                    <div class="task-stat failed">
+                        <i class="fas fa-times"></i>
+                        <div>
+                            <span class="number">12</span>
+                            <span class="label">失败</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-queue">
+                <h3>任务队列</h3>
+                <div class="task-list">
+                    <div class="task-item running">
+                        <div class="task-info">
+                            <h4>数据清洗任务 #1247</h4>
+                            <p>清洗用户行为数据，提取关键特征</p>
+                            <div class="task-meta">
+                                <span class="task-priority high">高优先级</span>
+                                <span class="task-agent">DataProcessor-01</span>
+                                <span class="task-time">运行中 · 3分钟</span>
+                            </div>
+                        </div>
+                        <div class="task-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                            <span class="progress-text">65%</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-icon" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon" title="暂停">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button class="btn-icon" title="停止">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="task-item pending">
+                        <div class="task-info">
+                            <h4>模型训练任务 #1248</h4>
+                            <p>训练用户画像预测模型</p>
+                            <div class="task-meta">
+                                <span class="task-priority medium">中优先级</span>
+                                <span class="task-agent">等待分配</span>
+                                <span class="task-time">等待中 · 5分钟</span>
+                            </div>
+                        </div>
+                        <div class="task-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text">0%</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-icon" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon" title="优先执行">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button class="btn-icon" title="取消">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="task-item completed">
+                        <div class="task-info">
+                            <h4>报告生成任务 #1246</h4>
+                            <p>生成月度运营分析报告</p>
+                            <div class="task-meta">
+                                <span class="task-priority low">低优先级</span>
+                                <span class="task-agent">KnowledgeWorker-01</span>
+                                <span class="task-time">已完成 · 10分钟前</span>
+                            </div>
+                        </div>
+                        <div class="task-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill completed" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-icon" title="查看结果">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="btn-icon" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon" title="重新执行">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DSL编辑器页面 -->
+        <section id="dsl-editor" class="content-section">
+            <div class="editor-layout">
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button class="btn primary" onclick="runDSLCode()">
+                            <i class="fas fa-play"></i>
+                            运行
+                        </button>
+                        <button class="btn secondary" onclick="saveDSLCode()">
+                            <i class="fas fa-save"></i>
+                            保存
+                        </button>
+                        <button class="btn secondary" onclick="loadTemplate()">
+                            <i class="fas fa-file-code"></i>
+                            模板
+                        </button>
+                        <button class="btn secondary" onclick="formatCode()">
+                            <i class="fas fa-magic"></i>
+                            格式化
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <select id="template-selector" onchange="loadSelectedTemplate()">
+                            <option value="">选择模板...</option>
+                            <option value="task-scheduling">任务调度模板</option>
+                            <option value="data-processing">数据处理模板</option>
+                            <option value="workflow-orchestration">工作流编排模板</option>
+                            <option value="multi-agent-coordination">多智能体协调模板</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="editor-container">
+                    <div class="editor-panel">
+                        <div class="editor-header">
+                            <span class="file-name">main.dsl</span>
+                            <div class="editor-controls">
+                                <button class="btn-icon" title="全屏编辑">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                                <button class="btn-icon" title="查找替换">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn-icon" title="设置">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="monaco-editor" class="monaco-container">
+                            <div class="editor-placeholder">
+                                <div class="placeholder-content">
+                                    <i class="fas fa-code"></i>
+                                    <h3>DSL 编辑器</h3>
+                                    <p>在此编写多智能体DSL脚本</p>
+                                    <div class="sample-code">
+                                        <pre># 示例：创建数据处理智能体
+spawn data_processor {
+    type: "DataProcessor"
+    capabilities: ["ETL", "Analytics"]
+    resources: {
+        cpu: "2 cores"
+        memory: "4GB"
+    }
+}
+
+# 定义任务
+task analyze_data {
+    input: "user_data.csv"
+    agent: data_processor
+    timeout: "30m"
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="output-panel">
+                        <div class="panel-tabs">
+                            <button class="tab-btn active" data-tab="output">执行输出</button>
+                            <button class="tab-btn" data-tab="logs">运行日志</button>
+                            <button class="tab-btn" data-tab="errors">错误信息</button>
+                            <button class="tab-btn" data-tab="syntax">语法检查</button>
+                        </div>
+
+                        <div class="tab-content">
+                            <div id="output-content" class="tab-panel active">
+                                <div class="output-placeholder">
+                                    <i class="fas fa-terminal"></i>
+                                    <p>运行DSL脚本查看输出结果</p>
+                                </div>
+                            </div>
+                            <div id="logs-content" class="tab-panel">
+                                <div class="log-entry info">
+                                    <span class="log-time">2025-09-23 16:35:42</span>
+                                    <span class="log-level">INFO</span>
+                                    <span class="log-message">DSL引擎初始化完成</span>
+                                </div>
+                                <div class="log-entry success">
+                                    <span class="log-time">2025-09-23 16:35:43</span>
+                                    <span class="log-level">SUCCESS</span>
+                                    <span class="log-message">智能体 DataProcessor-01 启动成功</span>
+                                </div>
+                            </div>
+                            <div id="errors-content" class="tab-panel">
+                                <div class="error-placeholder">
+                                    <i class="fas fa-check-circle"></i>
+                                    <p>暂无错误信息</p>
+                                </div>
+                            </div>
+                            <div id="syntax-content" class="tab-panel">
+                                <div class="syntax-check">
+                                    <div class="syntax-status success">
+                                        <i class="fas fa-check"></i>
+                                        <span>语法检查通过</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API控制台页面 -->
+        <section id="api-console" class="content-section">
+            <div class="page-header">
+                <h2>API控制台</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="sendRequest()">
+                        <i class="fas fa-paper-plane"></i>
+                        发送请求
+                    </button>
+                    <button class="btn secondary" onclick="clearConsole()">
+                        <i class="fas fa-trash"></i>
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <div class="api-console-container">
+                <div class="request-panel">
+                    <div class="request-header">
+                        <h3>请求配置</h3>
+                        <div class="method-selector">
+                            <select id="http-method">
+                                <option value="GET">GET</option>
+                                <option value="POST" selected>POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="url-input">
+                        <input type="text" placeholder="输入API端点..." value="/api/v1/agents" id="api-url">
+                        <button class="btn primary" onclick="sendRequest()">发送</button>
+                    </div>
+
+                    <div class="request-tabs">
+                        <button class="tab-btn active" data-tab="headers">请求头</button>
+                        <button class="tab-btn" data-tab="body">请求体</button>
+                        <button class="tab-btn" data-tab="auth">认证</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <div id="headers-tab" class="tab-panel active">
+                            <div class="header-item">
+                                <input type="text" placeholder="Header Name" value="Content-Type">
+                                <input type="text" placeholder="Header Value" value="application/json">
+                                <button class="btn-icon delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="header-item">
+                                <input type="text" placeholder="Header Name" value="Authorization">
+                                <input type="text" placeholder="Header Value" value="Bearer token123">
+                                <button class="btn-icon delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <button class="btn secondary" onclick="addHeader()">
+                                <i class="fas fa-plus"></i>
+                                添加请求头
+                            </button>
+                        </div>
+
+                        <div id="body-tab" class="tab-panel">
+                            <textarea placeholder="请求体 (JSON)" rows="10">{
+  "name": "DataProcessor-02",
+  "type": "DataProcessor",
+  "capabilities": ["ETL", "Analytics", "ML"],
+  "config": {
+    "max_concurrent_tasks": 5,
+    "timeout": "30m"
+  }
+}</textarea>
+                        </div>
+
+                        <div id="auth-tab" class="tab-panel">
+                            <div class="auth-method">
+                                <label>认证方式:</label>
+                                <select>
+                                    <option>Bearer Token</option>
+                                    <option>API Key</option>
+                                    <option>Basic Auth</option>
+                                </select>
+                            </div>
+                            <div class="auth-field">
+                                <label>Token:</label>
+                                <input type="password" placeholder="输入访问令牌..." value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="response-panel">
+                    <div class="response-header">
+                        <h3>响应结果</h3>
+                        <div class="response-status">
+                            <span class="status-code success">200</span>
+                            <span class="status-text">OK</span>
+                            <span class="response-time">342ms</span>
+                        </div>
+                    </div>
+
+                    <div class="response-tabs">
+                        <button class="tab-btn active" data-tab="response-body">响应体</button>
+                        <button class="tab-btn" data-tab="response-headers">响应头</button>
+                        <button class="tab-btn" data-tab="response-raw">原始数据</button>
+                    </div>
+
+                    <div class="response-content">
+                        <div id="response-body-tab" class="tab-panel active">
+                            <pre class="json-response">{
+  "success": true,
+  "data": {
+    "id": "agent_12345",
+    "name": "DataProcessor-02",
+    "status": "created",
+    "created_at": "2025-09-23T16:35:45Z"
+  },
+  "message": "智能体创建成功"
+}</pre>
+                        </div>
+
+                        <div id="response-headers-tab" class="tab-panel">
+                            <div class="header-list">
+                                <div class="header-item">
+                                    <span class="header-name">Content-Type:</span>
+                                    <span class="header-value">application/json</span>
+                                </div>
+                                <div class="header-item">
+                                    <span class="header-name">X-Request-ID:</span>
+                                    <span class="header-value">req_67890</span>
+                                </div>
+                                <div class="header-item">
+                                    <span class="header-name">X-RateLimit-Remaining:</span>
+                                    <span class="header-value">999</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="response-raw-tab" class="tab-panel">
+                            <pre class="raw-response">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 156
+X-Request-ID: req_67890
+X-RateLimit-Remaining: 999
+
+{"success":true,"data":{"id":"agent_12345","name":"DataProcessor-02","status":"created","created_at":"2025-09-23T16:35:45Z"},"message":"智能体创建成功"}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-examples">
+                <h3>API示例</h3>
+                <div class="example-list">
+                    <div class="example-item" onclick="loadExample('create-agent')">
+                        <h4>创建智能体</h4>
+                        <p>POST /api/v1/agents</p>
+                    </div>
+                    <div class="example-item" onclick="loadExample('list-agents')">
+                        <h4>获取智能体列表</h4>
+                        <p>GET /api/v1/agents</p>
+                    </div>
+                    <div class="example-item" onclick="loadExample('create-task')">
+                        <h4>创建任务</h4>
+                        <p>POST /api/v1/tasks</p>
+                    </div>
+                    <div class="example-item" onclick="loadExample('monitor-system')">
+                        <h4>系统监控</h4>
+                        <p>GET /api/v1/system/status</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 工作流设计页面 -->
+        <section id="workflow" class="content-section">
+            <div class="page-header">
+                <h2>工作流设计</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="saveWorkflow()">
+                        <i class="fas fa-save"></i>
+                        保存工作流
+                    </button>
+                    <button class="btn secondary" onclick="validateWorkflow()">
+                        <i class="fas fa-check"></i>
+                        验证
+                    </button>
+                    <button class="btn secondary" onclick="deployWorkflow()">
+                        <i class="fas fa-rocket"></i>
+                        部署
+                    </button>
+                </div>
+            </div>
+
+            <div class="workflow-designer">
+                <div class="workflow-toolbar">
+                    <div class="tool-group">
+                        <h4>节点类型</h4>
+                        <div class="node-types">
+                            <div class="node-type" draggable="true" data-type="start">
+                                <i class="fas fa-play"></i>
+                                <span>开始</span>
+                            </div>
+                            <div class="node-type" draggable="true" data-type="task">
+                                <i class="fas fa-cog"></i>
+                                <span>任务</span>
+                            </div>
+                            <div class="node-type" draggable="true" data-type="decision">
+                                <i class="fas fa-question"></i>
+                                <span>判断</span>
+                            </div>
+                            <div class="node-type" draggable="true" data-type="parallel">
+                                <i class="fas fa-code-branch"></i>
+                                <span>并行</span>
+                            </div>
+                            <div class="node-type" draggable="true" data-type="end">
+                                <i class="fas fa-stop"></i>
+                                <span>结束</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-group">
+                        <h4>操作</h4>
+                        <div class="workflow-actions">
+                            <button class="tool-btn" onclick="zoomIn()">
+                                <i class="fas fa-search-plus"></i>
+                                放大
+                            </button>
+                            <button class="tool-btn" onclick="zoomOut()">
+                                <i class="fas fa-search-minus"></i>
+                                缩小
+                            </button>
+                            <button class="tool-btn" onclick="fitToScreen()">
+                                <i class="fas fa-expand"></i>
+                                适应屏幕
+                            </button>
+                            <button class="tool-btn" onclick="clearWorkflow()">
+                                <i class="fas fa-trash"></i>
+                                清空
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-canvas" id="workflow-canvas">
+                    <div class="canvas-grid">
+                        <!-- 工作流画布网格 -->
+                    </div>
+
+                    <!-- 示例工作流节点 -->
+                    <div class="workflow-node start" style="top: 100px; left: 100px;">
+                        <div class="node-icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="node-label">开始</div>
+                        <div class="node-connector output"></div>
+                    </div>
+
+                    <div class="workflow-node task" style="top: 200px; left: 250px;">
+                        <div class="node-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="node-label">数据预处理</div>
+                        <div class="node-connector input"></div>
+                        <div class="node-connector output"></div>
+                    </div>
+
+                    <div class="workflow-node decision" style="top: 300px; left: 400px;">
+                        <div class="node-icon">
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <div class="node-label">数据验证</div>
+                        <div class="node-connector input"></div>
+                        <div class="node-connector output success"></div>
+                        <div class="node-connector output failure"></div>
+                    </div>
+
+                    <div class="workflow-node parallel" style="top: 400px; left: 550px;">
+                        <div class="node-icon">
+                            <i class="fas fa-code-branch"></i>
+                        </div>
+                        <div class="node-label">并行处理</div>
+                        <div class="node-connector input"></div>
+                        <div class="node-connector output"></div>
+                        <div class="node-connector output"></div>
+                    </div>
+
+                    <div class="workflow-node end" style="top: 500px; left: 700px;">
+                        <div class="node-icon">
+                            <i class="fas fa-stop"></i>
+                        </div>
+                        <div class="node-label">完成</div>
+                        <div class="node-connector input"></div>
+                    </div>
+
+                    <!-- 连接线 -->
+                    <svg class="workflow-connections">
+                        <path d="M 140 115 Q 195 115 195 215 Q 195 215 250 215" stroke="#667eea" stroke-width="2" fill="none" marker-end="url(#arrowhead)"></path>
+                        <path d="M 290 215 Q 345 215 345 315 Q 345 315 400 315" stroke="#667eea" stroke-width="2" fill="none" marker-end="url(#arrowhead)"></path>
+                        <path d="M 440 315 Q 495 315 495 415 Q 495 415 550 415" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"></path>
+                        <path d="M 590 415 Q 645 415 645 515 Q 645 515 700 515" stroke="#667eea" stroke-width="2" fill="none" marker-end="url(#arrowhead)"></path>
+
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#667eea"></polygon>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div class="workflow-properties">
+                    <h3>节点属性</h3>
+                    <div class="property-panel">
+                        <div class="property-item">
+                            <label>节点名称:</label>
+                            <input type="text" value="数据预处理">
+                        </div>
+                        <div class="property-item">
+                            <label>执行智能体:</label>
+                            <select>
+                                <option>DataProcessor-01</option>
+                                <option>DataProcessor-02</option>
+                                <option>TaskScheduler-01</option>
+                            </select>
+                        </div>
+                        <div class="property-item">
+                            <label>超时时间:</label>
+                            <input type="text" value="30分钟">
+                        </div>
+                        <div class="property-item">
+                            <label>重试次数:</label>
+                            <input type="number" value="3">
+                        </div>
+                        <div class="property-item">
+                            <label>并行度:</label>
+                            <input type="number" value="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 知识库管理页面 -->
+        <section id="knowledge-base" class="content-section">
+            <div class="page-header">
+                <h2>知识库管理</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="createKnowledgeBase()">
+                        <i class="fas fa-plus"></i>
+                        新建知识库
+                    </button>
+                    <button class="btn secondary" onclick="importKnowledge()">
+                        <i class="fas fa-upload"></i>
+                        导入知识
+                    </button>
+                </div>
+            </div>
+
+            <div class="knowledge-dashboard">
+                <div class="knowledge-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-database"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">1,247</span>
+                            <span class="stat-label">知识条目</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tags"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">89</span>
+                            <span class="stat-label">标签分类</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-search"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">3,456</span>
+                            <span class="stat-label">查询次数</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-brain"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">95.2%</span>
+                            <span class="stat-label">准确率</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-search">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索知识库..." id="knowledge-search">
+                        <button class="btn primary">搜索</button>
+                    </div>
+                    <div class="search-filters">
+                        <select>
+                            <option>全部分类</option>
+                            <option>技术文档</option>
+                            <option>业务流程</option>
+                            <option>最佳实践</option>
+                        </select>
+                        <select>
+                            <option>最近更新</option>
+                            <option>创建时间</option>
+                            <option>访问频率</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 团队协作页面 -->
+        <section id="collaboration" class="content-section">
+            <div class="page-header">
+                <h2>团队协作</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="inviteTeamMember()">
+                        <i class="fas fa-user-plus"></i>
+                        邀请成员
+                    </button>
+                    <button class="btn secondary" onclick="createProject()">
+                        <i class="fas fa-folder-plus"></i>
+                        新建项目
+                    </button>
+                </div>
+            </div>
+
+            <div class="collaboration-dashboard">
+                <div class="team-overview">
+                    <div class="team-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">团队成员</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">8</span>
+                            <span class="stat-label">进行中项目</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">156</span>
+                            <span class="stat-label">完成任务</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-grid">
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>智能客服系统</h3>
+                            <span class="project-status active">进行中</span>
+                        </div>
+                        <div class="project-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                            <span class="progress-text">65% 完成</span>
+                        </div>
+                        <div class="project-team">
+                            <div class="team-avatars">
+                                <img src="https://ui-avatars.com/api/?name=张三&background=667eea&color=fff" alt="张三">
+                                <img src="https://ui-avatars.com/api/?name=李四&background=9c27b0&color=fff" alt="李四">
+                                <img src="https://ui-avatars.com/api/?name=王五&background=ff9800&color=fff" alt="王五">
+                            </div>
+                            <span class="team-count">+2</span>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>数据分析平台</h3>
+                            <span class="project-status planning">规划中</span>
+                        </div>
+                        <div class="project-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 25%"></div>
+                            </div>
+                            <span class="progress-text">25% 完成</span>
+                        </div>
+                        <div class="project-team">
+                            <div class="team-avatars">
+                                <img src="https://ui-avatars.com/api/?name=赵六&background=4caf50&color=fff" alt="赵六">
+                                <img src="https://ui-avatars.com/api/?name=孙七&background=f44336&color=fff" alt="孙七">
+                            </div>
+                            <span class="team-count">+1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 系统设置页面 -->
+        <section id="settings" class="content-section">
+            <div class="page-header">
+                <h2>系统设置</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="saveSettings()">
+                        <i class="fas fa-save"></i>
+                        保存设置
+                    </button>
+                    <button class="btn secondary" onclick="resetSettings()">
+                        <i class="fas fa-undo"></i>
+                        重置默认
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-container">
+                <div class="settings-nav">
+                    <a href="#general-settings" class="settings-tab active">常规设置</a>
+                    <a href="#security-settings" class="settings-tab">安全设置</a>
+                    <a href="#notification-settings" class="settings-tab">通知设置</a>
+                    <a href="#integration-settings" class="settings-tab">集成设置</a>
+                </div>
+
+                <div class="settings-content">
+                    <div class="settings-section active" id="general-settings">
+                        <h3>常规设置</h3>
+                        <div class="setting-item">
+                            <label>系统语言</label>
+                            <select>
+                                <option>中文(简体)</option>
+                                <option>English</option>
+                                <option>日本語</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>时区设置</label>
+                            <select>
+                                <option>Asia/Shanghai (UTC+8)</option>
+                                <option>America/New_York (UTC-5)</option>
+                                <option>Europe/London (UTC+0)</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>主题风格</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="theme" value="light" checked> 浅色</label>
+                                <label><input type="radio" name="theme" value="dark"> 深色</label>
+                                <label><input type="radio" name="theme" value="auto"> 自动</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="security-settings">
+                        <h3>安全设置</h3>
+                        <div class="setting-item">
+                            <label>双因素认证</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="2fa-toggle">
+                                <label for="2fa-toggle"></label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label>会话超时时间</label>
+                            <select>
+                                <option>30分钟</option>
+                                <option>1小时</option>
+                                <option>4小时</option>
+                                <option>8小时</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 实时监控页面 -->
+        <section id="monitoring" class="content-section">
+            <div class="page-header">
+                <h2>实时监控</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="refreshMonitoring()">
+                        <i class="fas fa-sync"></i>
+                        刷新数据
+                    </button>
+                    <button class="btn secondary" onclick="exportReport()">
+                        <i class="fas fa-download"></i>
+                        导出报告
+                    </button>
+                </div>
+            </div>
+
+            <div class="monitoring-dashboard">
+                <div class="monitoring-stats">
+                    <div class="monitor-card system">
+                        <div class="card-header">
+                            <h3>系统状态</h3>
+                            <span class="status-indicator running"></span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-row">
+                                <span class="metric-name">CPU使用率</span>
+                                <div class="metric-bar">
+                                    <div class="bar-fill" style="width: 45%"></div>
+                                    <span class="metric-value">45%</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">内存使用率</span>
+                                <div class="metric-bar">
+                                    <div class="bar-fill" style="width: 67%"></div>
+                                    <span class="metric-value">67%</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">磁盘使用率</span>
+                                <div class="metric-bar">
+                                    <div class="bar-fill" style="width: 23%"></div>
+                                    <span class="metric-value">23%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="monitor-card agents">
+                        <div class="card-header">
+                            <h3>智能体状态</h3>
+                            <span class="agent-count">4个运行中</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="agent-status-list">
+                                <div class="agent-status-item">
+                                    <span class="agent-name">DataProcessor-01</span>
+                                    <span class="agent-load">负载: 45%</span>
+                                    <span class="status running">运行中</span>
+                                </div>
+                                <div class="agent-status-item">
+                                    <span class="agent-name">TaskScheduler-01</span>
+                                    <span class="agent-load">负载: 28%</span>
+                                    <span class="status running">运行中</span>
+                                </div>
+                                <div class="agent-status-item">
+                                    <span class="agent-name">Coordinator-01</span>
+                                    <span class="agent-load">负载: 78%</span>
+                                    <span class="status busy">忙碌</span>
+                                </div>
+                                <div class="agent-status-item">
+                                    <span class="agent-name">KnowledgeWorker-01</span>
+                                    <span class="agent-load">负载: 8%</span>
+                                    <span class="status idle">空闲</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="monitor-card tasks">
+                        <div class="card-header">
+                            <h3>任务执行</h3>
+                            <span class="task-rate">156 任务/小时</span>
+                        </div>
+                        <div class="card-content">
+                            <canvas id="task-execution-chart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="monitor-card network">
+                        <div class="card-header">
+                            <h3>网络流量</h3>
+                            <span class="network-status">正常</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-row">
+                                <span class="metric-name">入站流量</span>
+                                <span class="metric-value">125.3 MB/s</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">出站流量</span>
+                                <span class="metric-value">89.7 MB/s</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">连接数</span>
+                                <span class="metric-value">2,847</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="monitoring-charts">
+                    <div class="chart-container">
+                        <h3>系统性能趋势</h3>
+                        <canvas id="performance-trend-chart" width="800" height="300"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>任务处理量</h3>
+                        <canvas id="task-volume-chart" width="800" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 日志分析页面 -->
+        <section id="logs" class="content-section">
+            <div class="page-header">
+                <h2>日志分析</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="refreshLogs()">
+                        <i class="fas fa-sync"></i>
+                        刷新日志
+                    </button>
+                    <button class="btn secondary" onclick="clearLogs()">
+                        <i class="fas fa-trash"></i>
+                        清空日志
+                    </button>
+                    <button class="btn secondary" onclick="exportLogs()">
+                        <i class="fas fa-download"></i>
+                        导出日志
+                    </button>
+                </div>
+            </div>
+
+            <div class="log-filters">
+                <div class="filter-row">
+                    <select id="log-level-filter">
+                        <option value="all">全部级别</option>
+                        <option value="error">错误</option>
+                        <option value="warning">警告</option>
+                        <option value="info">信息</option>
+                        <option value="debug">调试</option>
+                    </select>
+                    <select id="log-source-filter">
+                        <option value="all">全部来源</option>
+                        <option value="system">系统</option>
+                        <option value="agents">智能体</option>
+                        <option value="tasks">任务</option>
+                        <option value="api">API</option>
+                    </select>
+                    <input type="datetime-local" id="log-start-time" value="2025-09-23T00:00">
+                    <input type="datetime-local" id="log-end-time" value="2025-09-23T23:59">
+                    <input type="text" placeholder="搜索日志内容..." id="log-search">
+                    <button class="btn primary" onclick="filterLogs()">筛选</button>
+                </div>
+            </div>
+
+            <div class="log-stats">
+                <div class="stat-item error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span class="count">12</span>
+                    <span class="label">错误</span>
+                </div>
+                <div class="stat-item warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span class="count">34</span>
+                    <span class="label">警告</span>
+                </div>
+                <div class="stat-item info">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="count">1,247</span>
+                    <span class="label">信息</span>
+                </div>
+                <div class="stat-item debug">
+                    <i class="fas fa-bug"></i>
+                    <span class="count">3,456</span>
+                    <span class="label">调试</span>
+                </div>
+            </div>
+
+            <div class="log-viewer">
+                <div class="log-entries">
+                    <div class="log-entry error">
+                        <span class="log-time">2025-09-23 16:45:32</span>
+                        <span class="log-level">ERROR</span>
+                        <span class="log-source">agents</span>
+                        <span class="log-message">DataProcessor-01: 连接数据库失败 - Connection timeout after 30s</span>
+                        <button class="log-details" onclick="showLogDetails(1)">详情</button>
+                    </div>
+
+                    <div class="log-entry warning">
+                        <span class="log-time">2025-09-23 16:44:15</span>
+                        <span class="log-level">WARN</span>
+                        <span class="log-source">system</span>
+                        <span class="log-message">内存使用率达到75%，建议释放资源</span>
+                        <button class="log-details" onclick="showLogDetails(2)">详情</button>
+                    </div>
+
+                    <div class="log-entry info">
+                        <span class="log-time">2025-09-23 16:43:42</span>
+                        <span class="log-level">INFO</span>
+                        <span class="log-source">tasks</span>
+                        <span class="log-message">任务 #1247 执行完成，耗时 125.3s</span>
+                        <button class="log-details" onclick="showLogDetails(3)">详情</button>
+                    </div>
+
+                    <div class="log-entry info">
+                        <span class="log-time">2025-09-23 16:42:18</span>
+                        <span class="log-level">INFO</span>
+                        <span class="log-source">agents</span>
+                        <span class="log-message">TaskScheduler-01: 开始执行新任务批次，包含15个任务</span>
+                        <button class="log-details" onclick="showLogDetails(4)">详情</button>
+                    </div>
+
+                    <div class="log-entry debug">
+                        <span class="log-time">2025-09-23 16:41:55</span>
+                        <span class="log-level">DEBUG</span>
+                        <span class="log-source">api</span>
+                        <span class="log-message">API请求: GET /api/v1/agents - 响应时间: 45ms</span>
+                        <button class="log-details" onclick="showLogDetails(5)">详情</button>
+                    </div>
+
+                    <div class="log-entry info">
+                        <span class="log-time">2025-09-23 16:40:33</span>
+                        <span class="log-level">INFO</span>
+                        <span class="log-source">system</span>
+                        <span class="log-message">系统健康检查完成，所有组件运行正常</span>
+                        <button class="log-details" onclick="showLogDetails(6)">详情</button>
+                    </div>
+                </div>
+
+                <div class="log-pagination">
+                    <button class="btn secondary" onclick="previousPage()">上一页</button>
+                    <span class="page-info">第 1 页，共 156 页</span>
+                    <button class="btn secondary" onclick="nextPage()">下一页</button>
+                    <select id="page-size">
+                        <option value="50">50条/页</option>
+                        <option value="100" selected>100条/页</option>
+                        <option value="200">200条/页</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 性能优化页面 -->
+        <section id="performance" class="content-section">
+            <div class="page-header">
+                <h2>性能优化</h2>
+                <div class="page-actions">
+                    <button class="btn primary" onclick="runOptimization()">
+                        <i class="fas fa-magic"></i>
+                        自动优化
+                    </button>
+                    <button class="btn secondary" onclick="generateReport()">
+                        <i class="fas fa-file-alt"></i>
+                        生成报告
+                    </button>
+                </div>
+            </div>
+
+            <div class="performance-overview">
+                <div class="perf-score">
+                    <div class="score-circle">
+                        <div class="score-number">85</div>
+                        <div class="score-label">性能评分</div>
+                    </div>
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <span class="item-name">任务处理效率</span>
+                            <div class="score-bar">
+                                <div class="bar-fill good" style="width: 92%"></div>
+                                <span class="item-score">92/100</span>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <span class="item-name">资源利用率</span>
+                            <div class="score-bar">
+                                <div class="bar-fill fair" style="width: 78%"></div>
+                                <span class="item-score">78/100</span>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <span class="item-name">响应时间</span>
+                            <div class="score-bar">
+                                <div class="bar-fill good" style="width: 85%"></div>
+                                <span class="item-score">85/100</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="optimization-suggestions">
+                    <h3>优化建议</h3>
+                    <div class="suggestion-list">
+                        <div class="suggestion-item high">
+                            <div class="suggestion-priority">高</div>
+                            <div class="suggestion-content">
+                                <h4>增加智能体实例</h4>
+                                <p>Coordinator-01 负载过高(78%)，建议增加一个协调器实例来分担负载</p>
+                                <div class="suggestion-impact">预计提升性能: +15%</div>
+                            </div>
+                            <button class="btn primary small" onclick="applyOptimization('add-coordinator')">应用</button>
+                        </div>
+
+                        <div class="suggestion-item medium">
+                            <div class="suggestion-priority">中</div>
+                            <div class="suggestion-content">
+                                <h4>调整任务调度策略</h4>
+                                <p>当前任务分配算法可以优化，建议启用负载均衡调度</p>
+                                <div class="suggestion-impact">预计提升性能: +8%</div>
+                            </div>
+                            <button class="btn secondary small" onclick="applyOptimization('load-balancing')">应用</button>
+                        </div>
+
+                        <div class="suggestion-item low">
+                            <div class="suggestion-priority">低</div>
+                            <div class="suggestion-content">
+                                <h4>优化内存配置</h4>
+                                <p>部分智能体内存配置过高，可以适当降低以节省资源</p>
+                                <div class="suggestion-impact">预计节省资源: 15%</div>
+                            </div>
+                            <button class="btn secondary small" onclick="applyOptimization('memory-config')">应用</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-metrics">
+                <div class="metric-charts">
+                    <div class="chart-row">
+                        <div class="chart-container">
+                            <h4>任务处理延迟</h4>
+                            <canvas id="latency-chart" width="400" height="200"></canvas>
+                            <div class="chart-stats">
+                                <span>平均延迟: 342ms</span>
+                                <span>P95延迟: 1.2s</span>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4>吞吐量趋势</h4>
+                            <canvas id="throughput-chart" width="400" height="200"></canvas>
+                            <div class="chart-stats">
+                                <span>当前吞吐量: 156 tasks/min</span>
+                                <span>峰值吞吐量: 203 tasks/min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-row">
+                        <div class="chart-container">
+                            <h4>资源使用分布</h4>
+                            <canvas id="resource-distribution-chart" width="400" height="200"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4>错误率统计</h4>
+                            <canvas id="error-rate-chart" width="400" height="200"></canvas>
+                            <div class="chart-stats">
+                                <span>错误率: 0.3%</span>
+                                <span>成功率: 99.7%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-history">
+                <h3>优化历史</h3>
+                <div class="history-timeline">
+                    <div class="history-item">
+                        <div class="history-time">2025-09-23 14:30</div>
+                        <div class="history-action">启用负载均衡调度</div>
+                        <div class="history-result success">性能提升 +12%</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-time">2025-09-23 10:15</div>
+                        <div class="history-action">增加 DataProcessor 实例</div>
+                        <div class="history-result success">吞吐量提升 +25%</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-time">2025-09-22 16:45</div>
+                        <div class="history-action">优化内存配置</div>
+                        <div class="history-result success">资源使用率降低 15%</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 模态对话框 -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">创建新智能体</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- 模态内容会动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    </div> <!-- 结束 main-app -->
+
+    <script>
+        // 初始化加载管理器
+        class LoadingManager {
+            constructor() {
+                this.progress = 0;
+                this.status = '准备启动...';
+                this.progressBar = document.getElementById('loading-progress-bar');
+                this.statusElement = document.getElementById('loading-status');
+            }
+
+            updateProgress(percentage, status) {
+                this.progress = Math.min(100, Math.max(0, percentage));
+                this.status = status;
+
+                if (this.progressBar) {
+                    this.progressBar.style.width = this.progress + '%';
+                }
+                if (this.statusElement) {
+                    this.statusElement.textContent = this.status;
+                }
+
+                console.log(`🔄 加载进度: ${this.progress}% - ${this.status}`);
+            }
+
+            complete() {
+                this.updateProgress(100, '初始化完成！');
+
+                setTimeout(() => {
+                    const overlay = document.getElementById('loading-overlay');
+                    const mainApp = document.getElementById('main-app');
+
+                    if (overlay) {
+                        overlay.classList.add('fade-out');
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                        }, 500);
+                    }
+
+                    if (mainApp) {
+                        mainApp.classList.add('loaded');
+                    }
+
+                    console.log('✅ 应用加载完成');
+                }, 500);
+            }
+        }
+
+        // 创建全局加载管理器
+        window.loadingManager = new LoadingManager();
+
+        // 监听页面加载进度
+        document.addEventListener('DOMContentLoaded', () => {
+            window.loadingManager.updateProgress(20, 'DOM结构加载完成...');
+        });
+
+        window.addEventListener('load', () => {
+            window.loadingManager.updateProgress(40, '页面资源加载完成...');
+        });
+
+        // 跳过加载函数
+        function skipToSimple() {
+            console.log('🔄 用户选择跳过加载，直接使用简化版');
+            window.location.href = 'simple.html';
+        }
+
+        // 启动主应用
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔄 DOM加载完成，准备启动应用...');
+
+            // 2秒后显示跳过按钮
+            setTimeout(() => {
+                const skipButton = document.getElementById('skip-loading');
+                if (skipButton) {
+                    skipButton.style.display = 'block';
+                    window.loadingManager.updateProgress(30, '加载时间较长，可选择跳过使用简化版');
+                }
+            }, 2000);
+
+            // 设置最大加载超时时间 - 缩短到3秒
+            const loadTimeout = setTimeout(() => {
+                console.error('❌ 应用加载超时，立即跳转到修复页面');
+                window.loadingManager.updateProgress(100, '检测到加载问题，正在跳转...');
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            }, 3000); // 3秒超时，立即响应
+
+            // 延迟一点时间让加载动画更自然
+            setTimeout(() => {
+                window.loadingManager.updateProgress(60, '正在加载主应用脚本...');
+
+                // 加载主应用脚本
+                const script = document.createElement('script');
+                script.src = 'app.js';
+
+                script.onload = () => {
+                    clearTimeout(loadTimeout);
+                    console.log('✅ 主应用脚本加载完成');
+                    window.loadingManager.updateProgress(80, '脚本加载完成，正在初始化...');
+
+                    // 设置平台初始化超时
+                    const initTimeout = setTimeout(() => {
+                        console.warn('⚠️ 平台初始化超时，强制完成加载');
+                        if (window.loadingManager) {
+                            window.loadingManager.complete();
+                        }
+                        showBasicInterface();
+                    }, 10000); // 10秒初始化超时
+
+                    // 监听平台初始化完成事件
+                    window.addEventListener('platformInitialized', () => {
+                        clearTimeout(initTimeout);
+                        console.log('✅ 平台初始化完成事件收到');
+                    });
+                };
+
+                script.onerror = (error) => {
+                    clearTimeout(loadTimeout);
+                    console.error('❌ 主应用脚本加载失败:', error);
+                    window.loadingManager.updateProgress(100, '脚本加载失败，跳转修复页面...');
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                };
+
+                document.head.appendChild(script);
+            }, 800);
+        });
+
+        // 应急模式 - 当主应用无法正常加载时
+        function showEmergencyMode() {
+            console.log('🆘 启动应急模式');
+
+            const overlay = document.getElementById('loading-overlay');
+            const mainApp = document.getElementById('main-app');
+
+            if (overlay) {
+                overlay.innerHTML = \`
+                    <div class="loading-icon">⚠️</div>
+                    <div class="loading-text">应急模式</div>
+                    <div class="loading-subtitle">主应用加载失败，正在启动备用界面...</div>
+                    <div style="margin-top: 30px;">
+                        <a href="simple.html" style="background: white; color: #667eea; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: 600; margin: 0 10px;">使用简化版</a>
+                        <button onclick="location.reload()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 15px 30px; border-radius: 50px; font-weight: 600; margin: 0 10px; cursor: pointer;">重新加载</button>
+                    </div>
+                \`;
+            }
+
+            // 隐藏主应用内容，避免显示错误
+            if (mainApp) {
+                mainApp.style.display = 'none';
+            }
+        }
+
+        // 显示基本界面（无JS功能版本）
+        function showBasicInterface() {
+            console.log('🔧 显示基本界面');
+
+            const overlay = document.getElementById('loading-overlay');
+            const mainApp = document.getElementById('main-app');
+
+            if (overlay) {
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 500);
+            }
+
+            if (mainApp) {
+                mainApp.classList.add('loaded');
+                // 添加基本提示
+                const notice = document.createElement('div');
+                notice.style.cssText = \`
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #fff3cd;
+                    color: #856404;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    font-weight: 500;
+                \`;
+                notice.innerHTML = '⚠️ 平台运行在基础模式，部分功能可能受限';
+                document.body.appendChild(notice);
+
+                // 5秒后隐藏提示
+                setTimeout(() => {
+                    notice.style.opacity = '0';
+                    setTimeout(() => notice.remove(), 300);
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

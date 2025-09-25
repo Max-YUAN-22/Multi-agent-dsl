@@ -1,0 +1,297 @@
+{
+    "platform": {
+        "name": "Multi-Agent DSL Framework",
+        "version": "2.0.0",
+        "environment": "production",
+        "debug": false
+    },
+    "api": {
+        "baseUrl": "/api/v1",
+        "timeout": 30000,
+        "retries": 3,
+        "rateLimit": {
+            "requests": 1000,
+            "window": 3600000
+        }
+    },
+    "websocket": {
+        "url": "/ws",
+        "reconnectInterval": 5000,
+        "maxReconnectAttempts": 10,
+        "heartbeatInterval": 30000
+    },
+    "agents": {
+        "maxConcurrent": 50,
+        "defaultTimeout": 1800000,
+        "healthCheckInterval": 30000,
+        "types": [
+            {
+                "id": "DataProcessor",
+                "name": "数据处理器",
+                "description": "专门处理ETL、数据清洗和验证任务",
+                "capabilities": ["ETL", "DataCleaning", "DataValidation", "StatisticalAnalysis"],
+                "defaultConfig": {
+                    "memory": "4GB",
+                    "cpu": 2,
+                    "maxConcurrentJobs": 5,
+                    "timeout": "30m"
+                },
+                "requiredPermissions": ["data.read", "data.write", "compute.execute"]
+            },
+            {
+                "id": "TaskScheduler",
+                "name": "任务调度器",
+                "description": "负载均衡和任务分配的智能调度系统",
+                "capabilities": ["TaskQueue", "LoadBalancing", "PriorityManagement", "ResourceAllocation"],
+                "defaultConfig": {
+                    "memory": "2GB",
+                    "cpu": 4,
+                    "queueSize": 1000,
+                    "schedulingStrategy": "round-robin"
+                },
+                "requiredPermissions": ["tasks.manage", "system.monitor", "agents.control"]
+            },
+            {
+                "id": "KnowledgeWorker",
+                "name": "知识工作者",
+                "description": "文档处理、知识抽取和语义搜索专家",
+                "capabilities": ["DocumentProcessing", "KnowledgeExtraction", "SemanticSearch", "ReportGeneration"],
+                "defaultConfig": {
+                    "memory": "8GB",
+                    "cpu": 2,
+                    "vectorDimensions": 768,
+                    "maxDocumentSize": "10MB"
+                },
+                "requiredPermissions": ["knowledge.read", "knowledge.write", "nlp.process"]
+            },
+            {
+                "id": "Coordinator",
+                "name": "协调器",
+                "description": "工作流编排和智能体间通信协调",
+                "capabilities": ["WorkflowOrchestration", "AgentCommunication", "ConflictResolution", "DecisionMaking"],
+                "defaultConfig": {
+                    "memory": "6GB",
+                    "cpu": 4,
+                    "maxAgents": 50,
+                    "decisionTimeout": "5m"
+                },
+                "requiredPermissions": ["workflow.manage", "agents.coordinate", "system.admin"]
+            },
+            {
+                "id": "MLModel",
+                "name": "机器学习模型",
+                "description": "机器学习模型训练、推理和评估",
+                "capabilities": ["ModelTraining", "Inference", "ModelEvaluation", "FeatureEngineering"],
+                "defaultConfig": {
+                    "memory": "16GB",
+                    "cpu": 8,
+                    "gpu": true,
+                    "batchSize": 32
+                },
+                "requiredPermissions": ["ml.train", "ml.inference", "compute.gpu", "data.read"]
+            },
+            {
+                "id": "APIAgent",
+                "name": "API代理",
+                "description": "外部API集成和数据同步服务",
+                "capabilities": ["RESTfulAPI", "GraphQL", "WebhookHandling", "DataSynchronization"],
+                "defaultConfig": {
+                    "memory": "2GB",
+                    "cpu": 2,
+                    "rateLimitPerSecond": 100,
+                    "timeout": "30s"
+                },
+                "requiredPermissions": ["api.external", "webhook.handle", "data.sync"]
+            }
+        ]
+    },
+    "tasks": {
+        "maxConcurrent": 100,
+        "defaultPriority": "medium",
+        "priorities": ["low", "medium", "high", "critical"],
+        "retryPolicy": {
+            "maxAttempts": 3,
+            "backoffMultiplier": 2,
+            "initialDelay": 1000
+        },
+        "timeouts": {
+            "default": 1800000,
+            "low": 3600000,
+            "medium": 1800000,
+            "high": 900000,
+            "critical": 300000
+        }
+    },
+    "monitoring": {
+        "metricsInterval": 5000,
+        "alertThresholds": {
+            "cpu": 80,
+            "memory": 85,
+            "disk": 90,
+            "errorRate": 5
+        },
+        "retentionPeriods": {
+            "metrics": "7d",
+            "logs": "30d",
+            "traces": "24h"
+        }
+    },
+    "security": {
+        "authentication": {
+            "enabled": true,
+            "tokenExpiry": 3600000,
+            "refreshTokenExpiry": 604800000,
+            "maxLoginAttempts": 5,
+            "lockoutDuration": 900000
+        },
+        "authorization": {
+            "enabled": true,
+            "rbac": true,
+            "defaultRole": "user"
+        },
+        "encryption": {
+            "algorithm": "AES-256-GCM",
+            "keyRotationInterval": 86400000
+        },
+        "audit": {
+            "enabled": true,
+            "logLevel": "info",
+            "sensitiveFields": ["password", "token", "key"]
+        }
+    },
+    "storage": {
+        "type": "hybrid",
+        "local": {
+            "path": "./data",
+            "maxSize": "10GB"
+        },
+        "cache": {
+            "type": "redis",
+            "ttl": 3600000,
+            "maxSize": "1GB"
+        },
+        "database": {
+            "type": "postgresql",
+            "pool": {
+                "min": 2,
+                "max": 20,
+                "idle": 10000
+            }
+        }
+    },
+    "ai": {
+        "providers": [
+            {
+                "name": "openai",
+                "apiKey": "${OPENAI_API_KEY}",
+                "models": ["gpt-4", "gpt-3.5-turbo", "text-embedding-ada-002"],
+                "rateLimits": {
+                    "requests": 3000,
+                    "tokens": 1000000
+                }
+            },
+            {
+                "name": "anthropic",
+                "apiKey": "${ANTHROPIC_API_KEY}",
+                "models": ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+                "rateLimits": {
+                    "requests": 1000,
+                    "tokens": 500000
+                }
+            }
+        ],
+        "embeddings": {
+            "dimension": 1536,
+            "batchSize": 100,
+            "similarity": "cosine"
+        },
+        "multimodal": {
+            "supportedTypes": ["text", "image", "audio", "video"],
+            "maxFileSize": "100MB",
+            "processors": {
+                "image": ["opencv", "pillow"],
+                "audio": ["whisper", "speech-recognition"],
+                "video": ["ffmpeg", "moviepy"]
+            }
+        }
+    },
+    "integrations": {
+        "external": [
+            {
+                "name": "slack",
+                "type": "notification",
+                "webhook": "${SLACK_WEBHOOK_URL}",
+                "channels": ["#alerts", "#monitoring"]
+            },
+            {
+                "name": "jira",
+                "type": "ticketing",
+                "url": "${JIRA_URL}",
+                "apiKey": "${JIRA_API_KEY}",
+                "project": "${JIRA_PROJECT}"
+            },
+            {
+                "name": "github",
+                "type": "version-control",
+                "token": "${GITHUB_TOKEN}",
+                "organization": "${GITHUB_ORG}"
+            }
+        ],
+        "cloud": [
+            {
+                "provider": "aws",
+                "services": ["s3", "lambda", "sqs", "sns"],
+                "region": "us-west-2",
+                "credentials": {
+                    "accessKey": "${AWS_ACCESS_KEY}",
+                    "secretKey": "${AWS_SECRET_KEY}"
+                }
+            },
+            {
+                "provider": "azure",
+                "services": ["blob", "functions", "servicebus"],
+                "region": "westus2",
+                "credentials": {
+                    "clientId": "${AZURE_CLIENT_ID}",
+                    "clientSecret": "${AZURE_CLIENT_SECRET}"
+                }
+            }
+        ]
+    },
+    "deployment": {
+        "mode": "containerized",
+        "orchestration": "kubernetes",
+        "scaling": {
+            "horizontal": true,
+            "minReplicas": 2,
+            "maxReplicas": 10,
+            "targetCPU": 70
+        },
+        "healthChecks": {
+            "liveness": "/health/live",
+            "readiness": "/health/ready",
+            "startup": "/health/startup"
+        },
+        "resources": {
+            "requests": {
+                "cpu": "500m",
+                "memory": "1Gi"
+            },
+            "limits": {
+                "cpu": "2",
+                "memory": "4Gi"
+            }
+        }
+    },
+    "features": {
+        "experimentalFeatures": false,
+        "demoMode": true,
+        "multiTenant": false,
+        "realTimeUpdates": true,
+        "autoScaling": true,
+        "distributedExecution": true,
+        "auditLogging": true,
+        "metricsCollection": true,
+        "alerting": true
+    }
+}

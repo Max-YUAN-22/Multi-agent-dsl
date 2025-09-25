@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业平台调试版</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .link-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .link-section a {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .link-section a:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🛠️ 企业平台调试工具</h1>
+
+        <div class="status info">
+            <strong>当前状态：</strong> 调试模式运行中 | <strong>时间：</strong> <span id="current-time"></span>
+        </div>
+
+        <h3>🔍 快速诊断</h3>
+        <div>
+            <button class="test-button" onclick="testResourceLoading()">测试资源加载</button>
+            <button class="test-button" onclick="testJavaScript()">测试JavaScript</button>
+            <button class="test-button" onclick="testNetworkAccess()">测试网络访问</button>
+            <button class="test-button" onclick="testMainApp()">测试主应用</button>
+            <button class="test-button" onclick="clearLogs()">清除日志</button>
+        </div>
+
+        <h3>📊 诊断结果</h3>
+        <div id="diagnostic-results"></div>
+
+        <h3>📝 实时日志</h3>
+        <div class="log-container" id="log-container"></div>
+
+        <div class="link-section">
+            <h3>🔗 快速访问</h3>
+            <a href="index.html">正式版平台</a>
+            <a href="simple.html">简化版平台</a>
+            <a href="working-test.html">功能测试</a>
+            <a href="index-redirect.html">重定向页面</a>
+        </div>
+
+        <div class="link-section">
+            <h3>🔧 调试选项</h3>
+            <button class="test-button" onclick="enableDebugMode()">启用调试模式</button>
+            <button class="test-button" onclick="simulateError()">模拟错误</button>
+            <button class="test-button" onclick="testLoadingTimeout()">测试加载超时</button>
+            <button class="test-button" onclick="checkConsoleErrors()">检查控制台错误</button>
+        </div>
+    </div>
+
+    <script>
+        // 日志系统
+        const logContainer = document.getElementById('log-container');
+        const resultsContainer = document.getElementById('diagnostic-results');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = \`[\${timestamp}] \${message}\`;
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#333';
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            console.log(\`[\${timestamp}] \${message}\`);
+        }
+
+        function addResult(test, success, details = '') {
+            const result = document.createElement('div');
+            result.className = \`status \${success ? 'success' : 'error'}\`;
+            result.innerHTML = \`<strong>\${test}:</strong> \${success ? '✅ 通过' : '❌ 失败'} \${details}\`;
+            resultsContainer.appendChild(result);
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = '';
+            resultsContainer.innerHTML = '';
+            log('日志已清除', 'info');
+        }
+
+        // 更新时间
+        function updateTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 测试函数
+        function testResourceLoading() {
+            log('开始测试资源加载...', 'info');
+
+            // 测试CSS加载
+            const cssTest = document.createElement('link');
+            cssTest.rel = 'stylesheet';
+            cssTest.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css';
+            cssTest.onload = () => {
+                log('CSS资源加载成功', 'success');
+                addResult('CSS资源加载', true);
+            };
+            cssTest.onerror = () => {
+                log('CSS资源加载失败', 'error');
+                addResult('CSS资源加载', false);
+            };
+            document.head.appendChild(cssTest);
+
+            // 测试JS加载
+            const jsTest = document.createElement('script');
+            jsTest.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            jsTest.onload = () => {
+                log('JS库加载成功', 'success');
+                addResult('JS库加载', true);
+            };
+            jsTest.onerror = () => {
+                log('JS库加载失败', 'error');
+                addResult('JS库加载', false);
+            };
+            document.head.appendChild(jsTest);
+        }
+
+        function testJavaScript() {
+            log('开始测试JavaScript功能...', 'info');
+
+            try {
+                // 测试ES6特性
+                const arrow = () => 'test';
+                const [a, b] = [1, 2];
+                const template = \`Template: \${arrow()}\`;
+
+                log('ES6特性测试通过', 'success');
+                addResult('ES6特性', true, '- 箭头函数、解构、模板字符串正常');
+
+                // 测试异步功能
+                Promise.resolve('async test').then(result => {
+                    log('Promise测试通过', 'success');
+                    addResult('Promise支持', true);
+                });
+
+                // 测试类和继承
+                class TestClass {
+                    constructor(name) { this.name = name; }
+                    getName() { return this.name; }
+                }
+                const instance = new TestClass('test');
+
+                if (instance.getName() === 'test') {
+                    log('类和继承测试通过', 'success');
+                    addResult('ES6类支持', true);
+                }
+
+            } catch (error) {
+                log(\`JavaScript测试失败: \${error.message}\`, 'error');
+                addResult('JavaScript功能', false, error.message);
+            }
+        }
+
+        function testNetworkAccess() {
+            log('开始测试网络访问...', 'info');
+
+            // 测试GitHub Pages访问
+            fetch('https://api.github.com/zen')
+                .then(response => {
+                    if (response.ok) {
+                        log('外部网络访问正常', 'success');
+                        addResult('网络访问', true, '- GitHub API响应正常');
+                        return response.text();
+                    } else {
+                        throw new Error(\`HTTP \${response.status}\`);
+                    }
+                })
+                .then(data => {
+                    log(\`网络响应: \${data.substring(0, 50)}...\`, 'info');
+                })
+                .catch(error => {
+                    log(\`网络访问失败: \${error.message}\`, 'error');
+                    addResult('网络访问', false, error.message);
+                });
+        }
+
+        function testMainApp() {
+            log('开始测试主应用加载...', 'info');
+
+            // 检查主应用文件是否存在
+            fetch('app.js')
+                .then(response => {
+                    if (response.ok) {
+                        log('app.js文件访问正常', 'success');
+                        addResult('主应用文件', true, \`- 文件大小: \${response.headers.get('content-length') || '未知'} bytes\`);
+
+                        // 尝试加载并执行
+                        const script = document.createElement('script');
+                        script.src = 'app.js';
+                        script.onload = () => {
+                            log('主应用脚本加载成功', 'success');
+                            addResult('脚本执行', true);
+
+                            // 检查平台对象是否创建
+                            setTimeout(() => {
+                                if (window.platform) {
+                                    log('平台对象创建成功', 'success');
+                                    addResult('平台对象', true);
+                                } else {
+                                    log('平台对象未找到', 'error');
+                                    addResult('平台对象', false);
+                                }
+                            }, 2000);
+                        };
+                        script.onerror = () => {
+                            log('主应用脚本加载失败', 'error');
+                            addResult('脚本执行', false);
+                        };
+                        document.head.appendChild(script);
+
+                    } else {
+                        throw new Error(\`HTTP \${response.status}\`);
+                    }
+                })
+                .catch(error => {
+                    log(\`主应用文件访问失败: \${error.message}\`, 'error');
+                    addResult('主应用文件', false, error.message);
+                });
+        }
+
+        function enableDebugMode() {
+            log('启用调试模式...', 'info');
+
+            // 添加全局错误监听
+            window.addEventListener('error', (e) => {
+                log(\`全局错误: \${e.message} (\${e.filename}:\${e.lineno})\`, 'error');
+            });
+
+            window.addEventListener('unhandledrejection', (e) => {
+                log(\`未处理的Promise拒绝: \${e.reason}\`, 'error');
+            });
+
+            // 启用详细日志
+            const originalLog = console.log;
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                log(args.join(' '), 'info');
+            };
+
+            log('调试模式已启用', 'success');
+            addResult('调试模式', true, '- 错误监听已启用');
+        }
+
+        function simulateError() {
+            log('模拟错误情况...', 'info');
+
+            try {
+                // 故意触发错误
+                nonExistentFunction();
+            } catch (error) {
+                log(\`捕获到模拟错误: \${error.message}\`, 'error');
+                addResult('错误处理', true, '- 错误捕获机制正常');
+            }
+        }
+
+        function testLoadingTimeout() {
+            log('测试加载超时机制...', 'info');
+
+            // 模拟长时间加载
+            const timeout = setTimeout(() => {
+                log('加载超时测试 - 10秒后触发', 'warning');
+                addResult('超时机制', true, '- 超时检测正常');
+            }, 10000);
+
+            // 5秒后取消
+            setTimeout(() => {
+                clearTimeout(timeout);
+                log('加载超时测试已取消', 'info');
+            }, 5000);
+        }
+
+        function checkConsoleErrors() {
+            log('检查控制台错误...', 'info');
+
+            // 检查常见的全局对象
+            const checks = [
+                { name: 'fetch API', check: () => typeof fetch !== 'undefined' },
+                { name: 'Promise', check: () => typeof Promise !== 'undefined' },
+                { name: 'localStorage', check: () => typeof localStorage !== 'undefined' },
+                { name: 'console', check: () => typeof console !== 'undefined' },
+                { name: 'document', check: () => typeof document !== 'undefined' },
+                { name: 'window', check: () => typeof window !== 'undefined' }
+            ];
+
+            checks.forEach(({ name, check }) => {
+                try {
+                    const result = check();
+                    log(\`\${name}: \${result ? '可用' : '不可用'}\`, result ? 'success' : 'error');
+                    addResult(name, result);
+                } catch (error) {
+                    log(\`\${name} 检查失败: \${error.message}\`, 'error');
+                    addResult(name, false, error.message);
+                }
+            });
+        }
+
+        // 页面加载完成时自动运行基本测试
+        window.addEventListener('load', () => {
+            log('调试页面加载完成', 'success');
+            log('建议先运行"测试JavaScript"和"测试主应用"', 'info');
+        });
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1': testJavaScript(); break;
+                    case '2': testResourceLoading(); break;
+                    case '3': testMainApp(); break;
+                    case 'l': clearLogs(); break;
+                }
+            }
+        });
+
+        log('🛠️ 调试工具已就绪 - 使用Ctrl+1/2/3进行快速测试', 'info');
+    </script>
+</body>
+</html>

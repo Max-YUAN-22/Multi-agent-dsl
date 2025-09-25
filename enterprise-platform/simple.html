@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业级多智能体管理平台 - 简化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .tutorial-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .tutorial-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .welcome-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        .feature-desc {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .status-bar {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .modal h3 {
+            color: #667eea;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tutorial-step {
+            margin-bottom: 1.5rem;
+        }
+
+        .tutorial-step h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .tutorial-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="logo">🤖 多智能体管理平台</div>
+        <button class="tutorial-btn pulse" onclick="startTutorial()">
+            🎓 新手教程
+        </button>
+    </header>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            ✅ 平台状态：在线运行中 | 🔧 简化版本：已优化加载速度 | 📱 响应式设计：支持所有设备
+        </div>
+
+        <!-- 欢迎卡片 -->
+        <div class="welcome-card">
+            <h1>🌟 欢迎使用企业级多智能体管理平台</h1>
+            <p style="font-size: 1.1rem; color: #666; margin: 1rem 0;">
+                这是一个高性能、可扩展的多智能体协作平台，为企业提供完整的智能化解决方案
+            </p>
+            <div>
+                <a href="index.html" class="btn">🚀 完整版平台</a>
+                <button class="btn btn-secondary" onclick="showFeatures()">📋 功能介绍</button>
+                <button class="btn" onclick="startTutorial()">🎓 新手教程</button>
+            </div>
+        </div>
+
+        <!-- 功能网格 -->
+        <div class="feature-grid" id="feature-grid">
+            <div class="feature-card" onclick="showFeatureDetail('dashboard')">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">智能监控面板</h3>
+                <p class="feature-desc">实时监控智能体状态、任务执行情况和系统性能指标</p>
+            </div>
+
+            <div class="feature-card" onclick="showFeatureDetail('agents')">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">智能体管理</h3>
+                <p class="feature-desc">创建、配置和管理多个智能体，支持不同类型和能力</p>
+            </div>
+
+            <div class="feature-card" onclick="showFeatureDetail('workflow')">
+                <div class="feature-icon">🔄</div>
+                <h3 class="feature-title">工作流引擎</h3>
+                <p class="feature-desc">可视化工作流设计，支持复杂业务流程自动化</p>
+            </div>
+
+            <div class="feature-card" onclick="showFeatureDetail('tasks')">
+                <div class="feature-icon">📋</div>
+                <h3 class="feature-title">任务调度</h3>
+                <p class="feature-desc">智能任务分配和调度，优化资源利用率</p>
+            </div>
+
+            <div class="feature-card" onclick="showFeatureDetail('collaboration')">
+                <div class="feature-icon">🤝</div>
+                <h3 class="feature-title">协作通信</h3>
+                <p class="feature-desc">智能体间实时通信和协作机制</p>
+            </div>
+
+            <div class="feature-card" onclick="showFeatureDetail('analytics')">
+                <div class="feature-icon">📈</div>
+                <h3 class="feature-title">数据分析</h3>
+                <p class="feature-desc">深度分析和报告，优化系统性能</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教程模态框 -->
+    <div class="modal" id="tutorial-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎓 新手教程</h3>
+                <button class="close-btn" onclick="closeTutorial()">&times;</button>
+            </div>
+            <div id="tutorial-content">
+                <!-- 教程内容会动态生成 -->
+            </div>
+            <div class="tutorial-navigation">
+                <button class="btn btn-secondary" id="prev-btn" onclick="previousStep()">← 上一步</button>
+                <span id="step-indicator">第 1 步，共 5 步</span>
+                <button class="btn" id="next-btn" onclick="nextStep()">下一步 →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能详情模态框 -->
+    <div class="modal" id="feature-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="feature-title">功能详情</h3>
+                <button class="close-btn" onclick="closeFeatureModal()">&times;</button>
+            </div>
+            <div id="feature-content">
+                <!-- 功能详情内容 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 教程系统
+        let currentTutorialStep = 0;
+        const tutorialSteps = [
+            {
+                title: "欢迎来到多智能体平台！",
+                content: `
+                    <p>👋 欢迎使用我们的企业级多智能体管理平台！</p>
+                    <p>🎯 本教程将带您了解平台的核心功能，只需几分钟时间。</p>
+                    <p>✨ 您将学习如何管理智能体、创建工作流和监控系统性能。</p>
+                `
+            },
+            {
+                title: "平台核心功能概览",
+                content: `
+                    <h4>🔍 主要功能模块：</h4>
+                    <ul style="line-height: 1.8; margin-left: 20px;">
+                        <li>📊 <strong>智能监控面板</strong> - 实时监控和数据可视化</li>
+                        <li>🤖 <strong>智能体管理</strong> - 创建和配置AI智能体</li>
+                        <li>🔄 <strong>工作流引擎</strong> - 自动化业务流程</li>
+                        <li>📋 <strong>任务调度</strong> - 智能任务分配</li>
+                        <li>🤝 <strong>协作通信</strong> - 智能体间通信</li>
+                        <li>📈 <strong>数据分析</strong> - 性能分析和优化</li>
+                    </ul>
+                `
+            },
+            {
+                title: "如何开始使用",
+                content: `
+                    <h4>🚀 快速开始步骤：</h4>
+                    <ol style="line-height: 1.8; margin-left: 20px;">
+                        <li><strong>点击功能卡片</strong> - 了解各功能模块详情</li>
+                        <li><strong>访问完整版</strong> - 点击"完整版平台"体验全功能</li>
+                        <li><strong>创建智能体</strong> - 在智能体管理中创建您的第一个AI助手</li>
+                        <li><strong>设计工作流</strong> - 使用可视化编辑器创建自动化流程</li>
+                        <li><strong>监控性能</strong> - 在监控面板查看实时数据</li>
+                    </ol>
+                `
+            },
+            {
+                title: "平台优势与特色",
+                content: `
+                    <h4>🌟 为什么选择我们：</h4>
+                    <ul style="line-height: 1.8; margin-left: 20px;">
+                        <li>⚡ <strong>高性能</strong> - 优化的架构，快速响应</li>
+                        <li>🔧 <strong>易于使用</strong> - 直观的用户界面</li>
+                        <li>🔄 <strong>可扩展</strong> - 支持大规模部署</li>
+                        <li>🛡️ <strong>安全可靠</strong> - 企业级安全保障</li>
+                        <li>📱 <strong>响应式</strong> - 支持各种设备</li>
+                        <li>🔌 <strong>易集成</strong> - 丰富的API接口</li>
+                    </ul>
+                `
+            },
+            {
+                title: "开始您的智能化之旅",
+                content: `
+                    <h4>🎉 恭喜！您已完成新手教程</h4>
+                    <p style="margin: 1rem 0;">现在您可以：</p>
+                    <ul style="line-height: 1.8; margin-left: 20px;">
+                        <li>🚀 <strong>体验完整版平台</strong> - 访问所有高级功能</li>
+                        <li>📖 <strong>查看文档</strong> - 深入了解各功能模块</li>
+                        <li>💬 <strong>获取支持</strong> - 遇到问题随时联系我们</li>
+                    </ul>
+                    <p style="margin: 1rem 0; text-align: center;">
+                        <a href="index.html" class="btn">🚀 立即体验完整版</a>
+                    </p>
+                `
+            }
+        ];
+
+        function startTutorial() {
+            currentTutorialStep = 0;
+            showTutorialStep();
+            document.getElementById('tutorial-modal').style.display = 'flex';
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorial-modal').style.display = 'none';
+        }
+
+        function showTutorialStep() {
+            const step = tutorialSteps[currentTutorialStep];
+            const content = document.getElementById('tutorial-content');
+            const indicator = document.getElementById('step-indicator');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            content.innerHTML = `
+                <div class="tutorial-step">
+                    <h4>${step.title}</h4>
+                    ${step.content}
+                </div>
+            `;
+
+            indicator.textContent = `第 ${currentTutorialStep + 1} 步，共 ${tutorialSteps.length} 步`;
+
+            prevBtn.style.display = currentTutorialStep === 0 ? 'none' : 'inline-block';
+            nextBtn.textContent = currentTutorialStep === tutorialSteps.length - 1 ? '完成教程' : '下一步 →';
+        }
+
+        function previousStep() {
+            if (currentTutorialStep > 0) {
+                currentTutorialStep--;
+                showTutorialStep();
+            }
+        }
+
+        function nextStep() {
+            if (currentTutorialStep < tutorialSteps.length - 1) {
+                currentTutorialStep++;
+                showTutorialStep();
+            } else {
+                closeTutorial();
+                alert('🎉 教程完成！感谢您的学习，现在可以开始使用平台了！');
+            }
+        }
+
+        // 功能详情
+        const featureDetails = {
+            dashboard: {
+                title: "📊 智能监控面板",
+                content: `
+                    <h4>功能特色：</h4>
+                    <ul>
+                        <li>实时数据展示</li>
+                        <li>可定制化仪表板</li>
+                        <li>多维度性能监控</li>
+                        <li>智能告警系统</li>
+                    </ul>
+                    <h4>应用场景：</h4>
+                    <p>系统监控、性能分析、故障诊断、容量规划</p>
+                `
+            },
+            agents: {
+                title: "🤖 智能体管理",
+                content: `
+                    <h4>功能特色：</h4>
+                    <ul>
+                        <li>多类型智能体支持</li>
+                        <li>可视化配置界面</li>
+                        <li>生命周期管理</li>
+                        <li>能力扩展机制</li>
+                    </ul>
+                    <h4>支持的智能体类型：</h4>
+                    <p>数据处理器、任务调度器、知识工作者、协调器、机器学习模型、API代理</p>
+                `
+            },
+            workflow: {
+                title: "🔄 工作流引擎",
+                content: `
+                    <h4>功能特色：</h4>
+                    <ul>
+                        <li>拖拽式流程设计</li>
+                        <li>条件分支控制</li>
+                        <li>并行任务执行</li>
+                        <li>错误处理机制</li>
+                    </ul>
+                    <h4>适用场景：</h4>
+                    <p>业务流程自动化、数据处理管道、审批流程、复杂任务编排</p>
+                `
+            },
+            tasks: {
+                title: "📋 任务调度",
+                content: `
+                    <h4>功能特色：</h4>
+                    <ul>
+                        <li>智能负载均衡</li>
+                        <li>优先级管理</li>
+                        <li>资源优化分配</li>
+                        <li>故障恢复机制</li>
+                    </ul>
+                    <h4>调度策略：</h4>
+                    <p>轮询调度、加权轮询、最少连接、响应时间优先</p>
+                `
+            },
+            collaboration: {
+                title: "🤝 协作通信",
+                content: `
+                    <h4>功能特色：</h4>
+                    <ul>
+                        <li>实时消息传递</li>
+                        <li>事件驱动架构</li>
+                        <li>协作模式管理</li>
+                        <li>冲突解决机制</li>
+                    </ul>
+                    <h4>通信方式：</h4>
+                    <p>点对点通信、广播消息、发布订阅、黑板模式</p>
+                `
+            },
+            analytics: {
+                title: "📈 数据分析",
+                content: `
+                    <h4>功能特色：</h4>
+                    <ul>
+                        <li>实时数据分析</li>
+                        <li>历史趋势分析</li>
+                        <li>预测性分析</li>
+                        <li>自定义报告</li>
+                    </ul>
+                    <h4>分析维度：</h4>
+                    <p>性能指标、资源利用率、任务完成度、错误率分析</p>
+                `
+            }
+        };
+
+        function showFeatureDetail(featureId) {
+            const feature = featureDetails[featureId];
+            if (feature) {
+                document.getElementById('feature-title').textContent = feature.title;
+                document.getElementById('feature-content').innerHTML = feature.content;
+                document.getElementById('feature-modal').style.display = 'flex';
+            }
+        }
+
+        function closeFeatureModal() {
+            document.getElementById('feature-modal').style.display = 'none';
+        }
+
+        function showFeatures() {
+            alert('💡 提示：点击下方任意功能卡片查看详细介绍！');
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTutorial();
+                closeFeatureModal();
+            }
+        });
+
+        // 页面加载完成提示
+        window.addEventListener('load', function() {
+            console.log('🎉 简化版平台加载完成！');
+
+            // 3秒后移除脉冲动画
+            setTimeout(function() {
+                document.querySelector('.tutorial-btn').classList.remove('pulse');
+            }, 3000);
+        });
+
+        // 点击模态框背景关闭
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                closeTutorial();
+                closeFeatureModal();
+            }
+        });
+    </script>
+</body>
+</html>

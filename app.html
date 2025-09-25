@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1976d2">
+    <meta name="description" content="多智能体DSL框架 - 完整技术演示版本">
+    <link rel="icon" href="/Multi-Agent_DSLframework/favicon.ico">
+    <title>多智能体DSL框架 - 完整技术演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .demo-card h1 {
+            font-size: 3em;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .demo-card .subtitle {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .demo-versions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .version-card {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .version-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .version-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .version-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .demo-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .demo-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .demo-link.secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .demo-link.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .tech-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .tech-info h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .tech-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tech-info li {
+            padding: 5px 0;
+            color: #666;
+        }
+
+        .tech-info li:before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .demo-card {
+                padding: 40px 20px;
+            }
+
+            .demo-card h1 {
+                font-size: 2.5em;
+            }
+
+            .demo-versions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="demo-card">
+            <h1>🚀 多智能体DSL框架</h1>
+            <p class="subtitle">Multi-Agent DSL Framework - 完整技术演示</p>
+
+            <div class="tech-info">
+                <h4>🔬 技术架构特色</h4>
+                <ul>
+                    <li><strong>ATSLP</strong> - 自适应任务调度引擎，智能负载均衡</li>
+                    <li><strong>HCMPL</strong> - 层次化协作机制，多级智能体协调</li>
+                    <li><strong>CALK</strong> - 协作学习内核，分布式知识融合</li>
+                    <li><strong>DSL</strong> - 领域特定语言，简化开发配置</li>
+                </ul>
+            </div>
+
+            <div class="demo-versions">
+                <div class="version-card">
+                    <h3>⚛️ React 技术演示版</h3>
+                    <p>基于 React 18 + Material-UI 构建的现代化前端应用，展示完整的组件化架构和交互式用户界面。</p>
+                    <a href="/Multi-Agent_DSLframework/react.html" class="demo-link">
+                        查看 React 版本
+                    </a>
+                </div>
+
+                <div class="version-card">
+                    <h3>🎨 优化展示版</h3>
+                    <p>纯 HTML/CSS/JS 实现的高性能版本，专为 GitHub Pages 优化，确保快速加载和完美兼容性。</p>
+                    <a href="/Multi-Agent_DSLframework/" class="demo-link secondary">
+                        查看优化版本
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee;">
+                <p style="color: #888; font-size: 0.9em;">
+                    📋 <strong>项目说明：</strong>本演示展示了两种不同的前端实现方案，React版本体现了现代化的组件开发思想，
+                    优化版本则注重性能和兼容性。两个版本都完整展现了多智能体DSL框架的核心理念和技术特色。
+                </p>
+
+                <div style="margin-top: 20px;">
+                    <a href="https://github.com/Max-YUAN-22/Multi-Agent_DSLframework" class="demo-link" target="_blank">
+                        📖 GitHub 源码
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 多智能体DSL框架 - 技术演示入口页面');
+
+        // 简单的访问统计
+        const startTime = Date.now();
+        window.addEventListener('load', function() {
+            const loadTime = Date.now() - startTime;
+            console.log(`⚡ 页面加载时间: ${loadTime}ms`);
+        });
+    </script>
+</body>
+</html>

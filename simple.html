@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent DSL Framework - 简化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            background: white;
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dsl-editor {
+            width: 100%;
+            height: 300px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .log {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .chat-messages {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+        }
+
+        .message.user {
+            background: #3b82f6;
+            color: white;
+            margin-left: 20%;
+        }
+
+        .message.assistant {
+            background: #e5e7eb;
+            color: #374151;
+            margin-right: 20%;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            margin-top: 1rem;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .success {
+            color: #10b981;
+            background: #f0fdf4;
+            padding: 0.5rem;
+            border-left: 4px solid #10b981;
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🤖 Multi-Agent DSL Framework</h1>
+        <p>企业级多智能体交互平台</p>
+        <div class="lang-switch" onclick="toggleLanguage()" id="lang-switch">
+            🇺🇸 English
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('dsl')">⚡ DSL Demo</button>
+            <button class="tab-btn" onclick="showTab('chat')">💬 多模态聊天</button>
+            <button class="tab-btn" onclick="showTab('dashboard')">📊 Dashboard</button>
+        </div>
+
+        <!-- DSL Demo 标签页 -->
+        <div class="tab-content active" id="dsl">
+            <div class="card">
+                <h2>DSL 交互式编辑器</h2>
+                <p style="margin-bottom: 1rem; color: #666;">在下方编辑器中输入DSL代码，然后点击执行查看结果</p>
+
+                <div>
+                    <button class="btn" onclick="executeCode()">▶️ 执行代码</button>
+                    <button class="btn" onclick="clearLog()">🗑️ 清空日志</button>
+                    <button class="btn" onclick="loadExample()">📄 加载示例</button>
+                </div>
+
+                <textarea class="dsl-editor" id="dsl-code" placeholder="在此输入DSL代码...">agent WeatherAgent {
+    capabilities: [api_calls, data_processing]
+    collaborates_with: [TrafficAgent]
+
+    task get_weather {
+        input: location
+        strategy: ATSLP_adaptive
+        output: weather_data
+    }
+}
+
+workflow CityAnalysisWorkflow {
+    agents: [WeatherAgent, TrafficAgent]
+    coordination: HCMPL_hierarchical
+    learning: CALK_enabled
+}</textarea>
+
+                <h3 style="margin: 1rem 0;">执行日志</h3>
+                <div class="log" id="execution-log">
+                    点击"执行代码"查看结果...
+                </div>
+            </div>
+        </div>
+
+        <!-- 多模态聊天标签页 -->
+        <div class="tab-content" id="chat">
+            <div class="card">
+                <h2>多模态智能聊天</h2>
+
+                <div class="chat-container">
+                    <div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message user">你好，请帮我分析一下多智能体系统的性能</div>
+                            <div class="message assistant">
+                                <strong>AI Assistant</strong><br>
+                                ✅ ATSLP任务调度分析: 检测到12个并发任务，优化后负载分布提升65%<br>
+                                🧠 CALK协作学习: 智能体间知识共享效率达到89.2%<br>
+                                🔄 HCMPL协作机制: 层次化协作响应时间减少28%
+                            </div>
+                        </div>
+
+                        <input type="text" class="chat-input" id="chat-input" placeholder="输入您的问题..." onkeypress="if(event.key==='Enter') sendMessage()">
+                        <button class="btn" onclick="sendMessage()">发送</button>
+                    </div>
+
+                    <div class="stats">
+                        <h3>实时分析</h3>
+                        <div class="stat-item">
+                            <span>消息总数</span>
+                            <strong id="message-count">2</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>平均响应时间</span>
+                            <strong id="avg-response">1.2s</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>准确率</span>
+                            <strong id="accuracy">98.5%</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>情感分数</span>
+                            <strong id="sentiment">92%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard 标签页 -->
+        <div class="tab-content" id="dashboard">
+            <div class="card">
+                <h2>系统监控仪表板</h2>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="active-agents">12</div>
+                        <div>活跃智能体</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="tasks-completed">1,248</div>
+                        <div>已完成任务</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="system-load">68%</div>
+                        <div>系统负载</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="learning-rate">94.2%</div>
+                        <div>学习效率</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 2rem; border-radius: 12px; margin-top: 2rem;">
+                    <h3>系统状态</h3>
+                    <div class="success">✅ ATSLP调度引擎: 运行正常 - 任务吞吐量 +15%</div>
+                    <div class="success">✅ HCMPL协作层: 运行正常 - 协作效率 +23%</div>
+                    <div class="success">✅ CALK学习模块: 运行正常 - 学习速度 +18%</div>
+                    <div class="success">✅ 多智能体网络: 运行正常 - 12个节点在线</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'zh';
+        let messageCount = 2;
+
+        // 标签页切换
+        function showTab(tabName) {
+            // 隐藏所有标签页
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 显示选中的标签页
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // DSL代码执行
+        function executeCode() {
+            const logElement = document.getElementById('execution-log');
+            logElement.innerHTML = '';
+
+            const steps = [
+                '🔄 解析DSL语法...',
+                '✅ Agent初始化: WeatherAgent 创建成功',
+                '✅ ATSLP任务调度: 自适应负载分配完成',
+                '✅ HCMPL协作机制: 层次化协作网络建立',
+                '✅ CALK学习框架: 协作感知学习启用',
+                '🚀 CityAnalysisWorkflow: 工作流启动成功'
+            ];
+
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'success';
+                    stepDiv.textContent = step;
+                    logElement.appendChild(stepDiv);
+                    logElement.scrollTop = logElement.scrollHeight;
+                }, index * 500);
+            });
+        }
+
+        function clearLog() {
+            document.getElementById('execution-log').innerHTML = '点击"执行代码"查看结果...';
+        }
+
+        function loadExample() {
+            document.getElementById('dsl-code').value = `// 智能城市分析系统
+agent WeatherAgent {
+    capabilities: [weather_api, data_analysis, forecasting]
+    collaborates_with: [TrafficAgent, EventAgent]
+
+    task analyze_weather {
+        input: location, timeframe
+        strategy: ATSLP_dynamic
+        learning: CALK_enabled
+        output: weather_analysis
+    }
+}
+
+agent TrafficAgent {
+    capabilities: [traffic_monitoring, route_optimization]
+    collaborates_with: [WeatherAgent]
+
+    task optimize_traffic {
+        input: weather_data, traffic_status
+        coordination: HCMPL_hierarchical
+        output: optimized_routes
+    }
+}
+
+workflow SmartCityWorkflow {
+    agents: [WeatherAgent, TrafficAgent, EventAgent]
+    coordination: HCMPL_hierarchical
+    learning: CALK_collaborative
+    execution_strategy: ATSLP_adaptive
+}`;
+        }
+
+        // 聊天功能
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatMessages = document.getElementById('chat-messages');
+
+            // 添加用户消息
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = message;
+            chatMessages.appendChild(userMsg);
+
+            // 清空输入
+            input.value = '';
+
+            // 模拟AI响应
+            setTimeout(() => {
+                const responses = [
+                    '✅ 智能体协作分析完成：检测到新的优化机会，系统性能预计提升18%',
+                    '🔍 多模态数据融合：已整合文本、数值和时序数据进行综合分析',
+                    '⚡ ATSLP调度优化：任务分配效率提升，平均响应时间减少22%',
+                    '🧠 CALK学习更新：基于最新交互更新知识库，推理准确率提升至99.1%',
+                    '🤝 HCMPL协作优化：多智能体协调机制已更新，并行处理能力提升35%'
+                ];
+
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message assistant';
+                aiMsg.innerHTML = `<strong>AI Assistant</strong><br>${responses[Math.floor(Math.random() * responses.length)]}`;
+                chatMessages.appendChild(aiMsg);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // 更新统计
+                messageCount += 2;
+                document.getElementById('message-count').textContent = messageCount;
+                document.getElementById('avg-response').textContent = (Math.random() * 2 + 0.5).toFixed(1) + 's';
+                document.getElementById('accuracy').textContent = (98 + Math.random() * 2).toFixed(1) + '%';
+            }, 1000);
+        }
+
+        // 语言切换
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            const langBtn = document.getElementById('lang-switch');
+            langBtn.textContent = currentLang === 'zh' ? '🇺🇸 English' : '🇨🇳 中文';
+
+            // 这里可以添加更多语言切换逻辑
+            console.log('语言切换至:', currentLang);
+        }
+
+        // 实时更新Dashboard数据
+        setInterval(() => {
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                document.getElementById('active-agents').textContent = Math.floor(Math.random() * 5) + 10;
+                document.getElementById('tasks-completed').textContent = (Math.floor(Math.random() * 100) + 1200).toLocaleString();
+                document.getElementById('system-load').textContent = Math.floor(Math.random() * 40) + 60 + '%';
+                document.getElementById('learning-rate').textContent = (Math.random() * 10 + 90).toFixed(1) + '%';
+            }
+        }, 3000);
+
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Multi-Agent DSL Platform 加载完成');
+            console.log('✅ 简化版企业级交互平台已就绪');
+        });
+    </script>
+</body>
+</html>

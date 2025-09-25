@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent DSL Framework - 企业级管理平台</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lang-switch {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dsl-editor {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #d4d4d4;
+            min-height: 300px;
+            border: none;
+            outline: none;
+            resize: none;
+            width: 100%;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .execution-log {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-running {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        .status-idle {
+            background: #f59e0b;
+        }
+
+        .status-error {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .agent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .case-study-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .case-study-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-left: 4px solid #10b981;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-study-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .algorithm-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .algorithm-tag {
+            padding: 0.25rem 0.75rem;
+            background: #eff6ff;
+            color: #1e40af;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .knowledge-graph {
+            width: 100%;
+            height: 400px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <span data-lang="title">Multi-Agent DSL Framework</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link active" data-tab="demo"><i class="fas fa-code"></i> <span data-lang="nav-dsl-demo">DSL Demo</span></a></li>
+                    <li><a href="#" class="nav-link" data-tab="agents"><i class="fas fa-users"></i> <span data-lang="nav-agent-management">Agent Management</span></a></li>
+                    <li><a href="#" class="nav-link" data-tab="multimodal"><i class="fas fa-comments"></i> <span data-lang="nav-multimodal-chat">Multi-modal Chat</span></a></li>
+                    <li><a href="#" class="nav-link" data-tab="knowledge"><i class="fas fa-project-diagram"></i> <span data-lang="nav-knowledge-graph">Knowledge Graph</span></a></li>
+                    <li><a href="#" class="nav-link" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span data-lang="nav-dashboard">Dashboard</span></a></li>
+                </ul>
+            </nav>
+            <div class="lang-switch" onclick="toggleLanguage()">
+                <i class="fas fa-globe"></i>
+                <span id="current-lang">🇺🇸 English</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- DSL Demo Tab -->
+        <div id="demo-content" class="tab-content active">
+            <h1 data-lang="demo-title">Multi-Agent DSL Framework Demo</h1>
+            <p data-lang="demo-subtitle">Experience Enterprise-Grade Multi-Agent Collaborative Learning & Adaptive Scheduling System</p>
+
+            <div class="dashboard-grid">
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-code"></i>
+                        <span data-lang="dsl-editor-title">DSL Source Code</span>
+                    </h2>
+                    <textarea id="dsl-editor" class="dsl-editor" placeholder="Enter your DSL code here...">// Multi-Agent DSL Code Example
+agent WeatherAgent {
+    capability: ["weather_prediction", "climate_analysis"]
+    schedule: ATSLP.adaptive_schedule()
+    cache: HCMPL.hierarchical_cache()
+    learning: CALK.collaborative_learning()
+
+    task weather_forecast(location) {
+        data = fetch_weather_data(location)
+        prediction = ATSLP.schedule_prediction(data)
+        cached_result = HCMPL.cache_lookup(location)
+
+        if (cached_result.valid) {
+            return CALK.enhance_with_learning(cached_result)
+        }
+
+        result = ml_model.predict(data)
+        HCMPL.cache_store(location, result)
+        CALK.share_knowledge(result)
+
+        return result
+    }
+}
+
+agent TrafficAgent {
+    capability: ["traffic_optimization", "route_planning"]
+    collaborate_with: [WeatherAgent]
+
+    task optimize_routes() {
+        weather_data = WeatherAgent.weather_forecast("city_center")
+        traffic_flow = analyze_traffic_patterns()
+
+        optimized_routes = ATSLP.schedule_optimization(weather_data, traffic_flow)
+        CALK.learn_from_collaboration(optimized_routes)
+
+        return optimized_routes
+    }
+}</textarea>
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="executeCode()">
+                            <i class="fas fa-play"></i>
+                            <span data-lang="run-code">Run Code</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearOutput()">
+                            <i class="fas fa-trash"></i>
+                            <span data-lang="clear-output">Clear Output</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-terminal"></i>
+                        <span data-lang="execution-log-title">Execution Process Visualization</span>
+                    </h2>
+                    <div id="execution-log" class="execution-log">
+                        <div style="color: #10b981;"><i class="fas fa-check"></i> Agent Initialization</div>
+                        <div style="color: #6b7280;">Creating WeatherAgent and TrafficAgent instances</div>
+                        <div style="margin: 0.5rem 0;"></div>
+
+                        <div style="color: #10b981;"><i class="fas fa-check"></i> ATSLP Task Scheduling</div>
+                        <div style="color: #6b7280;">Adaptive task scheduling and load prediction</div>
+                        <div style="margin: 0.5rem 0;"></div>
+
+                        <div style="color: #10b981;"><i class="fas fa-check"></i> HCMPL Cache Management</div>
+                        <div style="color: #6b7280;">Hierarchical cache lookup and pattern learning</div>
+                        <div style="margin: 0.5rem 0;"></div>
+
+                        <div style="color: #f59e0b;"><i class="fas fa-clock"></i> CALK Collaborative Learning</div>
+                        <div style="color: #6b7280;">Inter-agent knowledge sharing and collaborative optimization</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case Studies Section -->
+            <div class="section-card">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span data-lang="case-studies-title">Case Studies</span>
+                </h2>
+                <div class="case-study-grid">
+                    <div class="case-study-card">
+                        <h3>Smart City Traffic Optimization</h3>
+                        <p>Smart city traffic management system based on multi-agent DSL framework</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 92%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #6b7280;">
+                            <span data-lang="performance-improvement">Performance Improvement</span>
+                            <span>+35%</span>
+                        </div>
+                        <div class="algorithm-tags">
+                            <span class="algorithm-tag">ATSLP</span>
+                            <span class="algorithm-tag">HCMPL</span>
+                            <span class="algorithm-tag">CALK</span>
+                        </div>
+                    </div>
+
+                    <div class="case-study-card">
+                        <h3 data-lang="smart-grid-title">智能电网负载均衡</h3>
+                        <p data-lang="smart-grid-desc">分布式智能电网的动态负载调度和能效优化</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 89%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #6b7280;">
+                            <span data-lang="performance-improvement">Performance Improvement</span>
+                            <span>+28%</span>
+                        </div>
+                        <div class="algorithm-tags">
+                            <span class="algorithm-tag">ATSLP</span>
+                            <span class="algorithm-tag">HCMPL</span>
+                        </div>
+                    </div>
+
+                    <div class="case-study-card">
+                        <h3 data-lang="supply-chain-title">供应链智能协调</h3>
+                        <p data-lang="supply-chain-desc">全球供应链的智能体协作优化系统</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 95%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #6b7280;">
+                            <span data-lang="performance-improvement">Performance Improvement</span>
+                            <span>+42%</span>
+                        </div>
+                        <div class="algorithm-tags">
+                            <span class="algorithm-tag">ATSLP</span>
+                            <span class="algorithm-tag">HCMPL</span>
+                            <span class="algorithm-tag">CALK</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Management Tab -->
+        <div id="agents-content" class="tab-content">
+            <h1 data-lang="agent-management-title">Agent Management</h1>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label" data-lang="active-agents">Active Agents</div>
+                    <div class="metric-value" id="active-agents">8</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label" data-lang="total-tasks">Total Tasks</div>
+                    <div class="metric-value" id="total-tasks">156</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label" data-lang="success-rate">Success Rate</div>
+                    <div class="metric-value" id="success-rate">98.8%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label" data-lang="avg-response">Avg Response</div>
+                    <div class="metric-value" id="avg-response">120ms</div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2 class="section-title">
+                    <i class="fas fa-list"></i>
+                    <span data-lang="agent-status">Agent Status</span>
+                </h2>
+                <div class="agent-list">
+                    <div class="agent-item">
+                        <div>
+                            <span class="status-indicator status-running"></span>
+                            WeatherAgent
+                        </div>
+                        <div style="color: #10b981;">Running</div>
+                    </div>
+                    <div class="agent-item">
+                        <div>
+                            <span class="status-indicator status-running"></span>
+                            TrafficAgent
+                        </div>
+                        <div style="color: #10b981;">Running</div>
+                    </div>
+                    <div class="agent-item">
+                        <div>
+                            <span class="status-indicator status-idle"></span>
+                            ParkingAgent
+                        </div>
+                        <div style="color: #f59e0b;">Idle</div>
+                    </div>
+                    <div class="agent-item">
+                        <div>
+                            <span class="status-indicator status-running"></span>
+                            SafetyAgent
+                        </div>
+                        <div style="color: #10b981;">Running</div>
+                    </div>
+                    <div class="agent-item">
+                        <div>
+                            <span class="status-indicator status-running"></span>
+                            EMSAgent
+                        </div>
+                        <div style="color: #10b981;">Running</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-modal Chat Tab -->
+        <div id="multimodal-content" class="tab-content">
+            <h1 data-lang="multimodal-chat-title">Multi-modal Chat</h1>
+            <div class="dashboard-grid">
+                <div class="section-card" style="min-height: 500px;">
+                    <h2 class="section-title">
+                        <i class="fas fa-comments"></i>
+                        <span data-lang="chat-interface">Chat Interface</span>
+                    </h2>
+                    <div id="chat-messages" style="height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #f8fafc;">
+                        <div style="margin-bottom: 1rem;">
+                            <div style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 12px 12px 12px 4px; display: inline-block; margin-bottom: 0.5rem;">
+                                您好呀
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">20:48:33 😊 positive 100%</div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <div style="background: #e5e7eb; padding: 0.5rem 1rem; border-radius: 12px 12px 4px 12px; display: inline-block;">
+                                <div style="color: #3b82f6; font-weight: 600;">AI Assistant</div>
+                                ✅ATSLP任务调度完成: 识别到11个任务，优化负载分布，预计性能提升72.7%
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">20:48:35 😊 positive 85%</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="sendMessage('text')">
+                            <i class="fas fa-font"></i> 文字
+                        </button>
+                        <button class="btn btn-secondary" onclick="sendMessage('voice')">
+                            <i class="fas fa-microphone"></i> 语音
+                        </button>
+                        <button class="btn btn-secondary" onclick="sendMessage('image')">
+                            <i class="fas fa-image"></i> 图像
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 1rem;">
+                        <input type="text" id="chat-input" placeholder="输入您的问题..." style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-pie"></i>
+                        <span data-lang="realtime-analytics">Real-time Analytics</span>
+                    </h2>
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 2rem; color: #3b82f6; font-weight: 700;">2</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Total Messages</div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 2rem; color: #ef4444; font-weight: 700;">3593ms</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Avg Response</div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 2rem; color: #10b981; font-weight: 700;">98.8%</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knowledge Graph Tab -->
+        <div id="knowledge-content" class="tab-content">
+            <h1 data-lang="knowledge-graph-title">Knowledge Graph</h1>
+            <div class="section-card">
+                <h2 class="section-title">
+                    <i class="fas fa-project-diagram"></i>
+                    <span data-lang="graph-visualization">Graph Visualization</span>
+                </h2>
+                <div id="knowledge-graph" class="knowledge-graph"></div>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 50%;"></div>
+                        <span>Core Framework</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%;"></div>
+                        <span>Core Algorithms</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%;"></div>
+                        <span>Intelligent Agents</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard-content" class="tab-content">
+            <h1 data-lang="dashboard-title">System Dashboard</h1>
+            <div class="dashboard-grid">
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span data-lang="system-status">实时调度状态</span>
+                    </h2>
+                    <div style="margin: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>CPU使用率</span>
+                            <span>65%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%; background: #10b981;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>内存使用率</span>
+                            <span>78%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78%; background: #10b981;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>网络带宽</span>
+                            <span>45%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%; background: #10b981;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-tasks"></i>
+                        <span data-lang="task-queue">任务队列</span>
+                    </h2>
+                    <div class="agent-list">
+                        <div class="agent-item">
+                            <div>
+                                <span class="status-indicator" style="background: #ef4444;"></span>
+                                数据处理任务 <span style="background: #ef4444; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">high</span>
+                            </div>
+                        </div>
+                        <div class="agent-item">
+                            <div>
+                                <span class="status-indicator" style="background: #f59e0b;"></span>
+                                模型训练任务 <span style="background: #f59e0b; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">medium</span>
+                            </div>
+                        </div>
+                        <div class="agent-item">
+                            <div>
+                                <span class="status-indicator" style="background: #6b7280;"></span>
+                                API调用任务 <span style="background: #6b7280; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 多语言支持
+        const languages = {
+            'zh': {
+                'title': 'Multi-Agent DSL Framework',
+                'nav-dsl-demo': 'DSL 演示',
+                'nav-agent-management': 'Agent 管理',
+                'nav-multimodal-chat': '多模态聊天',
+                'nav-knowledge-graph': '知识图谱',
+                'nav-dashboard': '仪表板',
+                'demo-title': 'Multi-Agent DSL Framework 演示',
+                'demo-subtitle': '体验企业级多智能体协作学习与自适应调度系统',
+                'dsl-editor-title': 'DSL源代码',
+                'execution-log-title': '执行过程可视化',
+                'run-code': '运行代码',
+                'clear-output': '清空输出',
+                'case-studies-title': '案例研究',
+                'performance-improvement': '性能提升',
+                'smart-grid-title': '智能电网负载均衡',
+                'smart-grid-desc': '分布式智能电网的动态负载调度和能效优化',
+                'supply-chain-title': '供应链智能协调',
+                'supply-chain-desc': '全球供应链的智能体协作优化系统',
+                'agent-management-title': 'Agent管理',
+                'active-agents': '活跃Agent',
+                'total-tasks': '总任务数',
+                'success-rate': '成功率',
+                'avg-response': '平均响应',
+                'agent-status': 'Agent状态',
+                'multimodal-chat-title': '多模态聊天',
+                'chat-interface': '聊天界面',
+                'realtime-analytics': '实时分析',
+                'knowledge-graph-title': '知识图谱',
+                'graph-visualization': '图谱可视化',
+                'dashboard-title': '系统仪表板',
+                'system-status': '实时调度状态',
+                'task-queue': '任务队列'
+            },
+            'en': {
+                'title': 'Multi-Agent DSL Framework',
+                'nav-dsl-demo': 'DSL Demo',
+                'nav-agent-management': 'Agent Management',
+                'nav-multimodal-chat': 'Multi-modal Chat',
+                'nav-knowledge-graph': 'Knowledge Graph',
+                'nav-dashboard': 'Dashboard',
+                'demo-title': 'Multi-Agent DSL Framework Demo',
+                'demo-subtitle': 'Experience Enterprise-Grade Multi-Agent Collaborative Learning & Adaptive Scheduling System',
+                'dsl-editor-title': 'DSL Source Code',
+                'execution-log-title': 'Execution Process Visualization',
+                'run-code': 'Run Code',
+                'clear-output': 'Clear Output',
+                'case-studies-title': 'Case Studies',
+                'performance-improvement': 'Performance Improvement',
+                'smart-grid-title': 'Smart Grid Load Balancing',
+                'smart-grid-desc': 'Dynamic load scheduling and energy optimization for distributed smart grids',
+                'supply-chain-title': 'Supply Chain Coordination',
+                'supply-chain-desc': 'Global supply chain intelligent agent collaborative optimization system',
+                'agent-management-title': 'Agent Management',
+                'active-agents': 'Active Agents',
+                'total-tasks': 'Total Tasks',
+                'success-rate': 'Success Rate',
+                'avg-response': 'Avg Response',
+                'agent-status': 'Agent Status',
+                'multimodal-chat-title': 'Multi-modal Chat',
+                'chat-interface': 'Chat Interface',
+                'realtime-analytics': 'Real-time Analytics',
+                'knowledge-graph-title': 'Knowledge Graph',
+                'graph-visualization': 'Graph Visualization',
+                'dashboard-title': 'System Dashboard',
+                'system-status': 'Real-time Status',
+                'task-queue': 'Task Queue'
+            }
+        };
+
+        let currentLang = 'zh';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+            document.getElementById('current-lang').textContent =
+                currentLang === 'zh' ? '🇺🇸 English' : '🇨🇳 中文';
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (languages[currentLang][key]) {
+                    element.textContent = languages[currentLang][key];
+                }
+            });
+        }
+
+        // Tab 切换功能
+        function switchTab(tabName) {
+            // 隐藏所有tab内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // 移除所有nav链接的active类
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 显示目标tab内容
+            document.getElementById(tabName + '-content').classList.add('active');
+
+            // 添加active类到对应的nav链接
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        }
+
+        // 绑定导航链接点击事件
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tabName = link.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        // DSL代码执行
+        function executeCode() {
+            const logElement = document.getElementById('execution-log');
+            logElement.innerHTML = '';
+
+            const steps = [
+                { icon: 'fas fa-check', color: '#10b981', text: 'Agent Initialization', desc: 'Creating WeatherAgent and TrafficAgent instances', time: '120ms' },
+                { icon: 'fas fa-check', color: '#10b981', text: 'ATSLP Task Scheduling', desc: 'Adaptive task scheduling and load prediction', time: '85ms' },
+                { icon: 'fas fa-check', color: '#10b981', text: 'HCMPL Cache Management', desc: 'Hierarchical cache lookup and pattern learning', time: '45ms' },
+                { icon: 'fas fa-clock', color: '#f59e0b', text: 'CALK Collaborative Learning', desc: 'Inter-agent knowledge sharing and collaborative optimization', time: '在进行中...' },
+                { icon: 'fas fa-check', color: '#10b981', text: 'Workflow Execution', desc: 'Complete execution of agent collaboration workflow', time: '完成' }
+            ];
+
+            let index = 0;
+            const addStep = () => {
+                if (index < steps.length) {
+                    const step = steps[index];
+                    logElement.innerHTML += `
+                        <div style="color: ${step.color}; margin-bottom: 0.5rem;">
+                            <i class="${step.icon}"></i> ${step.text} - 耗时: ${step.time}
+                        </div>
+                        <div style="color: #6b7280; margin-bottom: 1rem;">${step.desc}</div>
+                    `;
+                    logElement.scrollTop = logElement.scrollHeight;
+                    index++;
+                    setTimeout(addStep, 800);
+                }
+            };
+
+            addStep();
+        }
+
+        function clearOutput() {
+            document.getElementById('execution-log').innerHTML = '';
+        }
+
+        function sendMessage(type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const input = document.getElementById('chat-input');
+            const message = input.value || `发送${type}消息...`;
+
+            const timestamp = new Date().toLocaleTimeString();
+
+            chatMessages.innerHTML += `
+                <div style="margin-bottom: 1rem;">
+                    <div style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 12px 12px 12px 4px; display: inline-block; margin-bottom: 0.5rem;">
+                        ${message}
+                    </div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">${timestamp} 😊 positive 95%</div>
+                </div>
+            `;
+
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 初始化知识图谱
+        function initKnowledgeGraph() {
+            const width = document.getElementById('knowledge-graph').clientWidth;
+            const height = 400;
+
+            const svg = d3.select('#knowledge-graph')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const nodes = [
+                { id: 'MultiAgent', group: 'framework', x: width/2, y: height/2 },
+                { id: 'ATSLP', group: 'algorithm', x: width/4, y: height/3 },
+                { id: 'HCMPL', group: 'algorithm', x: 3*width/4, y: height/3 },
+                { id: 'CALK', group: 'algorithm', x: width/2, y: height/6 },
+                { id: 'Weather', group: 'agent', x: width/6, y: 2*height/3 },
+                { id: 'Traffic', group: 'agent', x: width/3, y: 2*height/3 },
+                { id: 'Parking', group: 'agent', x: 2*width/3, y: 2*height/3 },
+                { id: 'Safety', group: 'agent', x: 5*width/6, y: 2*height/3 }
+            ];
+
+            const links = [
+                { source: 'MultiAgent', target: 'ATSLP' },
+                { source: 'MultiAgent', target: 'HCMPL' },
+                { source: 'MultiAgent', target: 'CALK' },
+                { source: 'ATSLP', target: 'Weather' },
+                { source: 'HCMPL', target: 'Traffic' },
+                { source: 'CALK', target: 'Parking' },
+                { source: 'MultiAgent', target: 'Safety' }
+            ];
+
+            const colorMap = {
+                'framework': '#3b82f6',
+                'algorithm': '#ef4444',
+                'agent': '#10b981'
+            };
+
+            // 绘制连接线
+            svg.selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('x1', d => nodes.find(n => n.id === d.source).x)
+                .attr('y1', d => nodes.find(n => n.id === d.source).y)
+                .attr('x2', d => nodes.find(n => n.id === d.target).x)
+                .attr('y2', d => nodes.find(n => n.id === d.target).y)
+                .attr('stroke', '#ccc')
+                .attr('stroke-width', 2);
+
+            // 绘制节点
+            svg.selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', d => d.group === 'framework' ? 30 : 20)
+                .attr('fill', d => colorMap[d.group]);
+
+            // 添加标签
+            svg.selectAll('text')
+                .data(nodes)
+                .enter()
+                .append('text')
+                .attr('x', d => d.x)
+                .attr('y', d => d.y + 5)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'white')
+                .attr('font-size', '12px')
+                .attr('font-weight', 'bold')
+                .text(d => d.id);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+            setTimeout(initKnowledgeGraph, 100);
+
+            // 添加实时数据更新
+            setInterval(() => {
+                document.getElementById('active-agents').textContent = Math.floor(Math.random() * 3) + 7;
+                document.getElementById('total-tasks').textContent = Math.floor(Math.random() * 50) + 130;
+                document.getElementById('success-rate').textContent = (98 + Math.random() * 2).toFixed(1) + '%';
+                document.getElementById('avg-response').textContent = Math.floor(Math.random() * 50) + 100 + 'ms';
+            }, 3000);
+        });
+
+        // 回车发送消息
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage('text');
+            }
+        });
+    </script>
+</body>
+</html>

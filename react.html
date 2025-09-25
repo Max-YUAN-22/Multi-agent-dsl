@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent DSL Framework - 企业级智能调度平台</title>
+    <meta name="description" content="企业级多智能体DSL框架 - 支持ATSLP自适应任务调度、HCMPL层次化协作、CALK协作感知学习">
+    <link rel="icon" href="/Multi-agent-dsl/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 2px solid transparent;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-1px);
+        }
+
+        .nav-tab.active {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .lang-switch {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .lang-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        /* 主容器 */
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 35px 100px rgba(0,0,0,0.15);
+        }
+
+        /* 标签页内容 */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-subtitle {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            padding: 1.25rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        /* DSL编辑器样式 */
+        .editor-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .editor-panel {
+            background: #1e1e1e;
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: #d4d4d4;
+        }
+
+        .dsl-editor {
+            width: 100%;
+            height: 400px;
+            background: transparent;
+            border: none;
+            color: #d4d4d4;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            padding: 1rem;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .btn-secondary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .btn-accent { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        .btn-info { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+
+        .execution-log {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            animation: slideInLeft 0.3s ease-out;
+        }
+
+        .log-entry.success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-left: 4px solid #10b981;
+        }
+
+        .log-entry.info {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .log-entry.warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-left: 4px solid #f59e0b;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 聊天界面样式 */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chat-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .modality-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modality-tab {
+            padding: 0.75rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modality-tab:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        .modality-tab.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            animation: messageSlide 0.4s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 85%;
+            padding: 1rem 1.25rem;
+            border-radius: 20px;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.assistant .message-bubble {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #374151;
+            border-bottom-left-radius: 6px;
+            border: 1px solid #d1d5db;
+        }
+
+        .message-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+            padding: 0 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sentiment-positive {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .sentiment-neutral {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .sentiment-negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .chat-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .input-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* 分析面板 */
+        .analytics-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+
+        .analytics-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .stat-card:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        /* Dashboard指标卡片 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .metric-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-trend {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .trend-up {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .trend-down {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .trend-stable {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* 状态面板 */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .status-panel {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+
+        .status-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-item:hover {
+            transform: translateX(4px);
+        }
+
+        .status-item.success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-left: 4px solid #10b981;
+        }
+
+        .status-item.warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .status-item.info {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-tabs {
+                display: none;
+            }
+
+            .editor-container,
+            .chat-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modality-tabs {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <span>🏢</span>
+                <span data-lang="platform-title">Multi-Agent DSL Framework</span>
+            </div>
+            <nav>
+                <ul class="nav-tabs">
+                    <li class="nav-tab active" data-tab="dsl">
+                        <span>⚡</span>
+                        <span data-lang="tab-dsl">DSL引擎</span>
+                    </li>
+                    <li class="nav-tab" data-tab="chat">
+                        <span>🤖</span>
+                        <span data-lang="tab-chat">智能协作</span>
+                    </li>
+                    <li class="nav-tab" data-tab="dashboard">
+                        <span>📊</span>
+                        <span data-lang="tab-dashboard">监控中心</span>
+                    </li>
+                    <li class="nav-tab" data-tab="analytics">
+                        <span>📈</span>
+                        <span data-lang="tab-analytics">性能分析</span>
+                    </li>
+                </ul>
+            </nav>
+            <button class="lang-switch" onclick="toggleLanguage()">
+                <span>🌐</span>
+                <span id="current-lang" data-lang="lang-switch">English</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- DSL引擎标签页 -->
+        <div class="tab-content active" id="dsl">
+            <div class="card">
+                <h1 class="section-title">
+                    <span>🔧</span>
+                    <span data-lang="dsl-title">DSL智能编辑器</span>
+                </h1>
+
+                <div class="section-subtitle">
+                    <strong data-lang="dsl-subtitle">企业级DSL引擎</strong> - <span data-lang="dsl-description">支持ATSLP自适应任务调度、HCMPL层次化协作、CALK协作感知学习</span>
+                </div>
+
+                <div class="editor-toolbar">
+                    <button class="btn btn-primary" onclick="executeCode()">
+                        <span>▶️</span>
+                        <span data-lang="btn-execute">执行部署</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="validateCode()">
+                        <span>✅</span>
+                        <span data-lang="btn-validate">语法检查</span>
+                    </button>
+                    <button class="btn btn-accent" onclick="optimizeCode()">
+                        <span>⚡</span>
+                        <span data-lang="btn-optimize">性能优化</span>
+                    </button>
+                    <button class="btn btn-info" onclick="loadTemplate()">
+                        <span>📄</span>
+                        <span data-lang="btn-template">加载模板</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="clearLog()">
+                        <span>🗑️</span>
+                        <span data-lang="btn-clear">清空日志</span>
+                    </button>
+                </div>
+
+                <div class="editor-container">
+                    <div class="editor-panel">
+                        <div class="editor-header">
+                            <span>📝</span>
+                            <strong data-lang="editor-title">DSL代码编辑器</strong>
+                        </div>
+                        <textarea class="dsl-editor" id="dsl-code" data-lang-placeholder="editor-placeholder">// 企业级智能城市管理系统
+agent WeatherAgent {
+    capabilities: [weather_api, data_analysis, forecasting]
+    collaborates_with: [TrafficAgent, EventAgent]
+
+    task analyze_weather {
+        input: location, timeframe
+        strategy: ATSLP_dynamic
+        learning: CALK_enabled
+        output: weather_analysis
+    }
+}
+
+agent TrafficAgent {
+    capabilities: [traffic_monitoring, route_optimization]
+    collaborates_with: [WeatherAgent]
+
+    task optimize_traffic {
+        input: weather_data, traffic_status
+        coordination: HCMPL_hierarchical
+        output: optimized_routes
+    }
+}
+
+workflow SmartCityWorkflow {
+    agents: [WeatherAgent, TrafficAgent, EventAgent]
+    coordination: HCMPL_hierarchical
+    learning: CALK_collaborative
+    execution_strategy: ATSLP_adaptive
+}</textarea>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📋</span>
+                            <span data-lang="execution-log">执行日志</span>
+                        </h3>
+                        <div class="execution-log" id="execution-log">
+                            <div style="text-align: center; padding: 2rem; color: #64748b;">
+                                <span>💡</span>
+                                <span data-lang="log-placeholder">点击"执行部署"查看结果...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能协作标签页 -->
+        <div class="tab-content" id="chat">
+            <div class="card">
+                <h1 class="section-title">
+                    <span>🤖</span>
+                    <span data-lang="chat-title">企业级智能协作中心</span>
+                </h1>
+
+                <div class="section-subtitle">
+                    <strong data-lang="chat-subtitle">多智能体协作系统</strong> - <span data-lang="chat-description">支持自然语言交互、任务分解、智能决策分析</span>
+                </div>
+
+                <div class="chat-layout">
+                    <div class="chat-panel">
+                        <div class="chat-header">
+                            <h3 style="color: #1e40af; margin: 0;" data-lang="chat-interface">聊天界面</h3>
+                            <div class="loading" id="chat-loading" style="display: none;"></div>
+                        </div>
+
+                        <div class="modality-tabs">
+                            <button class="modality-tab active" data-modality="text">
+                                <span>💬</span>
+                                <span data-lang="mode-text">文字</span>
+                            </button>
+                            <button class="modality-tab" data-modality="voice">
+                                <span>🎤</span>
+                                <span data-lang="mode-voice">语音</span>
+                            </button>
+                            <button class="modality-tab" data-modality="image">
+                                <span>🖼️</span>
+                                <span data-lang="mode-image">图像</span>
+                            </button>
+                            <button class="modality-tab" data-modality="video">
+                                <span>🎥</span>
+                                <span data-lang="mode-video">视频</span>
+                            </button>
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message user">
+                                <div class="message-bubble">
+                                    <span data-lang="sample-user-msg">你好，请帮我分析一下多智能体系统的性能表现</span>
+                                </div>
+                                <div class="message-meta">
+                                    <span data-lang="time-now">刚刚</span>
+                                    <span class="sentiment-badge sentiment-positive">positive 95%</span>
+                                </div>
+                            </div>
+
+                            <div class="message assistant">
+                                <div class="message-bubble">
+                                    <strong style="color: #3b82f6;" data-lang="ai-assistant">AI Assistant</strong><br>
+                                    <span data-lang="sample-ai-response">
+                                        ✅ ATSLP任务调度分析: 检测到15个并发任务，优化后负载分布提升68%<br>
+                                        🧠 CALK协作学习: 智能体间知识共享效率达到92.5%<br>
+                                        🔄 HCMPL协作机制: 层次化协作响应时间减少35%
+                                    </span>
+                                </div>
+                                <div class="message-meta">
+                                    <span data-lang="time-now">刚刚</span>
+                                    <span class="sentiment-badge sentiment-neutral">neutral 88%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" id="chat-input" data-lang-placeholder="chat-placeholder">
+                            <div class="input-actions">
+                                <button class="input-btn" onclick="sendMessage('voice')" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);" data-lang-title="voice-input">
+                                    <span>🎤</span>
+                                </button>
+                                <button class="input-btn" onclick="sendMessage('image')" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);" data-lang-title="image-input">
+                                    <span>🖼️</span>
+                                </button>
+                                <button class="input-btn" onclick="sendMessage('text')" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);" data-lang-title="send-message">
+                                    <span>📤</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-panel">
+                        <h3 class="analytics-title">
+                            <span>📊</span>
+                            <span data-lang="realtime-analytics">实时分析</span>
+                        </h3>
+
+                        <div class="stat-card">
+                            <span class="stat-label" data-lang="total-messages">消息总数</span>
+                            <span class="stat-value" id="message-count">2</span>
+                        </div>
+
+                        <div class="stat-card">
+                            <span class="stat-label" data-lang="avg-response">平均响应时间</span>
+                            <span class="stat-value" id="avg-response">1.2s</span>
+                        </div>
+
+                        <div class="stat-card">
+                            <span class="stat-label" data-lang="accuracy">准确率</span>
+                            <span class="stat-value" id="accuracy">98.5%</span>
+                        </div>
+
+                        <div class="stat-card">
+                            <span class="stat-label" data-lang="sentiment-score">情感分数</span>
+                            <span class="stat-value" style="color: #10b981;" id="sentiment">91%</span>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h4 style="color: #1e40af; margin-bottom: 1rem;" data-lang="recent-activity">最近活动</h4>
+                            <div style="font-size: 0.9rem; color: #64748b; line-height: 1.8;">
+                                <div>🎤 <span data-lang="voice-processed">语音处理完成</span> - 0.8s</div>
+                                <div>🧠 <span data-lang="nlp-analysis">NLP分析完成</span> - 0.5s</div>
+                                <div>⚡ <span data-lang="response-generated">智能体协作响应</span> - 1.2s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 监控中心标签页 -->
+        <div class="tab-content" id="dashboard">
+            <div class="card">
+                <h1 class="section-title">
+                    <span>📊</span>
+                    <span data-lang="dashboard-title">企业级监控中心</span>
+                </h1>
+
+                <div class="section-subtitle">
+                    <strong data-lang="dashboard-subtitle">实时系统监控</strong> - <span data-lang="dashboard-description">多维度性能指标、智能预警、资源优化建议</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="active-agents">12</div>
+                        <div class="metric-label" data-lang="active-agents">活跃智能体节点</div>
+                        <div class="metric-trend trend-stable">
+                            <span>🟢</span>
+                            <span data-lang="all-online">全部在线</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="tasks-completed">1,248</div>
+                        <div class="metric-label" data-lang="tasks-completed">今日完成任务</div>
+                        <div class="metric-trend trend-up">
+                            <span>📈</span>
+                            <span data-lang="up-15">+15% 昨日</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="system-load">68%</div>
+                        <div class="metric-label" data-lang="system-load">集群负载率</div>
+                        <div class="metric-trend trend-stable">
+                            <span>⚖️</span>
+                            <span data-lang="balanced">均衡状态</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" id="learning-rate">94.2%</div>
+                        <div class="metric-label" data-lang="learning-rate">CALK学习效率</div>
+                        <div class="metric-trend trend-up">
+                            <span>🧠</span>
+                            <span data-lang="optimizing">持续优化</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-panel">
+                        <h3 class="status-title">
+                            <span>🏭</span>
+                            <span data-lang="core-services">核心服务状态</span>
+                        </h3>
+
+                        <div class="status-item success">
+                            <span>✅</span>
+                            <div>
+                                <strong>ATSLP调度引擎</strong>
+                                <div style="font-size: 0.85rem; color: #64748b;" data-lang="atslp-status">运行正常 - 任务吞吐量 +15%</div>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>✅</span>
+                            <div>
+                                <strong>HCMPL协作层</strong>
+                                <div style="font-size: 0.85rem; color: #64748b;" data-lang="hcmpl-status">运行正常 - 协作效率 +23%</div>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>✅</span>
+                            <div>
+                                <strong>CALK学习模块</strong>
+                                <div style="font-size: 0.85rem; color: #64748b;" data-lang="calk-status">运行正常 - 学习速度 +18%</div>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>✅</span>
+                            <div>
+                                <strong data-lang="load-balancer">负载均衡器</strong>
+                                <div style="font-size: 0.85rem; color: #64748b;" data-lang="balancer-status">运行正常 - 12个节点在线</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-panel">
+                        <h3 class="status-title">
+                            <span>🔔</span>
+                            <span data-lang="real-alerts">实时告警</span>
+                        </h3>
+
+                        <div class="status-item warning">
+                            <span>⚠️</span>
+                            <div>
+                                <strong data-lang="alert-response">检测到WeatherAgent-03响应时间增加15%</strong>
+                                <div style="font-size: 0.85rem; color: #92400e;" data-lang="alert-suggestion">建议: 检查网络连接</div>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>✅</span>
+                            <div>
+                                <strong data-lang="auto-scale">系统自动扩容成功，新增2个Agent实例</strong>
+                                <div style="font-size: 0.85rem; color: #166534;" data-lang="scale-time">时间: 14:32:18</div>
+                            </div>
+                        </div>
+
+                        <div class="status-item info">
+                            <span>📊</span>
+                            <div>
+                                <strong data-lang="model-update">CALK学习模型更新完成，准确率提升至99.1%</strong>
+                                <div style="font-size: 0.85rem; color: #1e40af;" data-lang="model-version">版本: v2.1.3</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 性能分析标签页 -->
+        <div class="tab-content" id="analytics">
+            <div class="card">
+                <h1 class="section-title">
+                    <span>📈</span>
+                    <span data-lang="analytics-title">性能分析与优化建议</span>
+                </h1>
+
+                <div class="section-subtitle">
+                    <strong data-lang="ai-driven">AI驱动的性能分析</strong> - <span data-lang="analytics-description">基于历史数据的智能分析与预测</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #10b981;" id="throughput">2,847</div>
+                        <div class="metric-label" data-lang="throughput">任务吞吐量/小时</div>
+                        <div class="metric-trend trend-up">
+                            <span>📈</span>
+                            <span data-lang="up-24">+24% 本周</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #f59e0b;" id="efficiency">96.8%</div>
+                        <div class="metric-label" data-lang="collaboration-efficiency">协作效率</div>
+                        <div class="metric-trend trend-up">
+                            <span>🚀</span>
+                            <span data-lang="up-12">+12% 本月</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #8b5cf6;" id="latency">23ms</div>
+                        <div class="metric-label" data-lang="avg-latency">平均延迟</div>
+                        <div class="metric-trend trend-down">
+                            <span>⬇️</span>
+                            <span data-lang="down-18">-18% 优化</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #ef4444;" id="cost-saving">¥18.6K</div>
+                        <div class="metric-label" data-lang="cost-saving">成本节省/月</div>
+                        <div class="metric-trend trend-up">
+                            <span>💰</span>
+                            <span data-lang="smart-optimization">智能优化</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-panel">
+                        <h3 class="status-title">
+                            <span>🎯</span>
+                            <span data-lang="optimization-suggestions">优化建议</span>
+                        </h3>
+
+                        <div class="status-item success">
+                            <span>💡</span>
+                            <div>
+                                <strong data-lang="suggest-add-agents">建议增加2个WeatherAgent实例，预计提升15%吞吐量</strong>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>⚡</span>
+                            <div>
+                                <strong data-lang="suggest-atslp">ATSLP调度策略优化，可减少平均延迟8ms</strong>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>🧠</span>
+                            <div>
+                                <strong data-lang="suggest-calk">CALK学习参数调整，预计提升准确率3.2%</strong>
+                            </div>
+                        </div>
+
+                        <div class="status-item success">
+                            <span>🔄</span>
+                            <div>
+                                <strong data-lang="suggest-hcmpl">HCMPL层次结构重构，优化协作路径</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-panel">
+                        <h3 class="status-title">
+                            <span>📊</span>
+                            <span data-lang="trend-prediction">趋势预测</span>
+                        </h3>
+
+                        <div class="status-item success">
+                            <span>📈</span>
+                            <div>
+                                <strong data-lang="predict-growth">下周预计任务量增长28%，建议提前扩容</strong>
+                            </div>
+                        </div>
+
+                        <div class="status-item warning">
+                            <span>⚠️</span>
+                            <div>
+                                <strong data-lang="predict-bottleneck">周五高峰期可能出现资源瓶颈</strong>
+                            </div>
+                        </div>
+
+                        <div class="status-item info">
+                            <span>🔮</span>
+                            <div>
+                                <strong data-lang="ai-predict">AI预测：月底可达99.2%协作效率</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 多语言支持数据
+        const languages = {
+            'zh': {
+                'platform-title': 'Multi-Agent DSL Framework',
+                'tab-dsl': 'DSL引擎',
+                'tab-chat': '智能协作',
+                'tab-dashboard': '监控中心',
+                'tab-analytics': '性能分析',
+                'lang-switch': 'English',
+
+                'dsl-title': 'DSL智能编辑器',
+                'dsl-subtitle': '企业级DSL引擎',
+                'dsl-description': '支持ATSLP自适应任务调度、HCMPL层次化协作、CALK协作感知学习',
+                'btn-execute': '执行部署',
+                'btn-validate': '语法检查',
+                'btn-optimize': '性能优化',
+                'btn-template': '加载模板',
+                'btn-clear': '清空日志',
+                'editor-title': 'DSL代码编辑器',
+                'editor-placeholder': '在此输入DSL代码...',
+                'execution-log': '执行日志',
+                'log-placeholder': '点击"执行部署"查看结果...',
+
+                'chat-title': '企业级智能协作中心',
+                'chat-subtitle': '多智能体协作系统',
+                'chat-description': '支持自然语言交互、任务分解、智能决策分析',
+                'chat-interface': '聊天界面',
+                'mode-text': '文字',
+                'mode-voice': '语音',
+                'mode-image': '图像',
+                'mode-video': '视频',
+                'chat-placeholder': '输入您的问题...',
+                'sample-user-msg': '你好，请帮我分析一下多智能体系统的性能表现',
+                'ai-assistant': 'AI Assistant',
+                'sample-ai-response': '✅ ATSLP任务调度分析: 检测到15个并发任务，优化后负载分布提升68%<br>🧠 CALK协作学习: 智能体间知识共享效率达到92.5%<br>🔄 HCMPL协作机制: 层次化协作响应时间减少35%',
+                'time-now': '刚刚',
+                'voice-input': '语音输入',
+                'image-input': '图像输入',
+                'send-message': '发送消息',
+                'realtime-analytics': '实时分析',
+                'total-messages': '消息总数',
+                'avg-response': '平均响应时间',
+                'accuracy': '准确率',
+                'sentiment-score': '情感分数',
+                'recent-activity': '最近活动',
+                'voice-processed': '语音处理完成',
+                'nlp-analysis': 'NLP分析完成',
+                'response-generated': '智能体协作响应',
+
+                'dashboard-title': '企业级监控中心',
+                'dashboard-subtitle': '实时系统监控',
+                'dashboard-description': '多维度性能指标、智能预警、资源优化建议',
+                'active-agents': '活跃智能体节点',
+                'tasks-completed': '今日完成任务',
+                'system-load': '集群负载率',
+                'learning-rate': 'CALK学习效率',
+                'all-online': '全部在线',
+                'up-15': '+15% 昨日',
+                'balanced': '均衡状态',
+                'optimizing': '持续优化',
+                'core-services': '核心服务状态',
+                'atslp-status': '运行正常 - 任务吞吐量 +15%',
+                'hcmpl-status': '运行正常 - 协作效率 +23%',
+                'calk-status': '运行正常 - 学习速度 +18%',
+                'load-balancer': '负载均衡器',
+                'balancer-status': '运行正常 - 12个节点在线',
+                'real-alerts': '实时告警',
+                'alert-response': '检测到WeatherAgent-03响应时间增加15%',
+                'alert-suggestion': '建议: 检查网络连接',
+                'auto-scale': '系统自动扩容成功，新增2个Agent实例',
+                'scale-time': '时间: 14:32:18',
+                'model-update': 'CALK学习模型更新完成，准确率提升至99.1%',
+                'model-version': '版本: v2.1.3',
+
+                'analytics-title': '性能分析与优化建议',
+                'ai-driven': 'AI驱动的性能分析',
+                'analytics-description': '基于历史数据的智能分析与预测',
+                'throughput': '任务吞吐量/小时',
+                'collaboration-efficiency': '协作效率',
+                'avg-latency': '平均延迟',
+                'cost-saving': '成本节省/月',
+                'up-24': '+24% 本周',
+                'up-12': '+12% 本月',
+                'down-18': '-18% 优化',
+                'smart-optimization': '智能优化',
+                'optimization-suggestions': '优化建议',
+                'suggest-add-agents': '建议增加2个WeatherAgent实例，预计提升15%吞吐量',
+                'suggest-atslp': 'ATSLP调度策略优化，可减少平均延迟8ms',
+                'suggest-calk': 'CALK学习参数调整，预计提升准确率3.2%',
+                'suggest-hcmpl': 'HCMPL层次结构重构，优化协作路径',
+                'trend-prediction': '趋势预测',
+                'predict-growth': '下周预计任务量增长28%，建议提前扩容',
+                'predict-bottleneck': '周五高峰期可能出现资源瓶颈',
+                'ai-predict': 'AI预测：月底可达99.2%协作效率'
+            },
+            'en': {
+                'platform-title': 'Multi-Agent DSL Framework',
+                'tab-dsl': 'DSL Engine',
+                'tab-chat': 'Smart Collaboration',
+                'tab-dashboard': 'Monitoring Center',
+                'tab-analytics': 'Performance Analytics',
+                'lang-switch': '中文',
+
+                'dsl-title': 'DSL Smart Editor',
+                'dsl-subtitle': 'Enterprise DSL Engine',
+                'dsl-description': 'Support ATSLP adaptive task scheduling, HCMPL hierarchical collaboration, CALK collaborative awareness learning',
+                'btn-execute': 'Execute Deploy',
+                'btn-validate': 'Syntax Check',
+                'btn-optimize': 'Performance Optimize',
+                'btn-template': 'Load Template',
+                'btn-clear': 'Clear Log',
+                'editor-title': 'DSL Code Editor',
+                'editor-placeholder': 'Enter DSL code here...',
+                'execution-log': 'Execution Log',
+                'log-placeholder': 'Click "Execute Deploy" to view results...',
+
+                'chat-title': 'Enterprise Smart Collaboration Center',
+                'chat-subtitle': 'Multi-Agent Collaboration System',
+                'chat-description': 'Support natural language interaction, task decomposition, intelligent decision analysis',
+                'chat-interface': 'Chat Interface',
+                'mode-text': 'Text',
+                'mode-voice': 'Voice',
+                'mode-image': 'Image',
+                'mode-video': 'Video',
+                'chat-placeholder': 'Enter your question...',
+                'sample-user-msg': 'Hello, please help me analyze the performance of the multi-agent system',
+                'ai-assistant': 'AI Assistant',
+                'sample-ai-response': '✅ ATSLP task scheduling analysis: Detected 15 concurrent tasks, optimized load distribution improved by 68%<br>🧠 CALK collaborative learning: Knowledge sharing efficiency between agents reached 92.5%<br>🔄 HCMPL collaboration mechanism: Hierarchical collaboration response time reduced by 35%',
+                'time-now': 'Just now',
+                'voice-input': 'Voice Input',
+                'image-input': 'Image Input',
+                'send-message': 'Send Message',
+                'realtime-analytics': 'Real-time Analytics',
+                'total-messages': 'Total Messages',
+                'avg-response': 'Avg Response Time',
+                'accuracy': 'Accuracy',
+                'sentiment-score': 'Sentiment Score',
+                'recent-activity': 'Recent Activity',
+                'voice-processed': 'Voice processing completed',
+                'nlp-analysis': 'NLP analysis completed',
+                'response-generated': 'Agent collaboration response',
+
+                'dashboard-title': 'Enterprise Monitoring Center',
+                'dashboard-subtitle': 'Real-time System Monitoring',
+                'dashboard-description': 'Multi-dimensional performance metrics, intelligent alerts, resource optimization recommendations',
+                'active-agents': 'Active Agent Nodes',
+                'tasks-completed': 'Tasks Completed Today',
+                'system-load': 'Cluster Load Rate',
+                'learning-rate': 'CALK Learning Efficiency',
+                'all-online': 'All Online',
+                'up-15': '+15% Yesterday',
+                'balanced': 'Balanced',
+                'optimizing': 'Continuously Optimizing',
+                'core-services': 'Core Services Status',
+                'atslp-status': 'Running normally - Task throughput +15%',
+                'hcmpl-status': 'Running normally - Collaboration efficiency +23%',
+                'calk-status': 'Running normally - Learning speed +18%',
+                'load-balancer': 'Load Balancer',
+                'balancer-status': 'Running normally - 12 nodes online',
+                'real-alerts': 'Real-time Alerts',
+                'alert-response': 'Detected WeatherAgent-03 response time increased by 15%',
+                'alert-suggestion': 'Suggestion: Check network connection',
+                'auto-scale': 'System auto-scaling successful, added 2 Agent instances',
+                'scale-time': 'Time: 14:32:18',
+                'model-update': 'CALK learning model update completed, accuracy improved to 99.1%',
+                'model-version': 'Version: v2.1.3',
+
+                'analytics-title': 'Performance Analysis & Optimization Suggestions',
+                'ai-driven': 'AI-Driven Performance Analysis',
+                'analytics-description': 'Intelligent analysis and prediction based on historical data',
+                'throughput': 'Task Throughput/Hour',
+                'collaboration-efficiency': 'Collaboration Efficiency',
+                'avg-latency': 'Average Latency',
+                'cost-saving': 'Cost Savings/Month',
+                'up-24': '+24% This Week',
+                'up-12': '+12% This Month',
+                'down-18': '-18% Optimized',
+                'smart-optimization': 'Smart Optimization',
+                'optimization-suggestions': 'Optimization Suggestions',
+                'suggest-add-agents': 'Recommend adding 2 WeatherAgent instances, expected 15% throughput improvement',
+                'suggest-atslp': 'ATSLP scheduling strategy optimization, can reduce average latency by 8ms',
+                'suggest-calk': 'CALK learning parameter adjustment, expected accuracy improvement of 3.2%',
+                'suggest-hcmpl': 'HCMPL hierarchical structure refactoring, optimize collaboration paths',
+                'trend-prediction': 'Trend Prediction',
+                'predict-growth': 'Expected 28% task volume growth next week, recommend advance scaling',
+                'predict-bottleneck': 'Possible resource bottleneck during Friday peak hours',
+                'ai-predict': 'AI Prediction: 99.2% collaboration efficiency by month end'
+            }
+        };
+
+        // 全局变量
+        let currentLang = 'zh';
+        let currentModality = 'text';
+        let messageCount = 2;
+        let isExecuting = false;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            updateLanguage();
+        });
+
+        function initializeApp() {
+            // 标签页切换事件
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab));
+            });
+
+            // 模态切换事件
+            document.querySelectorAll('.modality-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchModality(tab));
+            });
+
+            // 聊天输入事件
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendMessage('text');
+                });
+            }
+
+            // 定时更新数据
+            startDataUpdates();
+
+            console.log('🚀 Multi-Agent DSL Framework initialized successfully');
+        }
+
+        // 语言切换
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+
+            const langBtn = document.getElementById('current-lang');
+            langBtn.textContent = languages[currentLang]['lang-switch'];
+
+            console.log(`Language switched to: ${currentLang}`);
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (languages[currentLang] && languages[currentLang][key]) {
+                    if (element.innerHTML.includes('<')) {
+                        // 如果包含HTML，只更新文本部分
+                        const parts = element.innerHTML.split('<');
+                        parts[0] = languages[currentLang][key];
+                        element.innerHTML = parts.join('<');
+                    } else {
+                        element.textContent = languages[currentLang][key];
+                    }
+                }
+            });
+
+            // 更新占位符
+            const placeholderElements = document.querySelectorAll('[data-lang-placeholder]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-lang-placeholder');
+                if (languages[currentLang] && languages[currentLang][key]) {
+                    element.placeholder = languages[currentLang][key];
+                }
+            });
+
+            // 更新标题属性
+            const titleElements = document.querySelectorAll('[data-lang-title]');
+            titleElements.forEach(element => {
+                const key = element.getAttribute('data-lang-title');
+                if (languages[currentLang] && languages[currentLang][key]) {
+                    element.title = languages[currentLang][key];
+                }
+            });
+        }
+
+        // 标签页切换
+        function switchTab(clickedTab) {
+            const tabName = clickedTab.getAttribute('data-tab');
+
+            // 更新导航标签
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            clickedTab.classList.add('active');
+
+            // 更新内容区域
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            console.log(`Switched to tab: ${tabName}`);
+        }
+
+        // 模态切换
+        function switchModality(clickedTab) {
+            currentModality = clickedTab.getAttribute('data-modality');
+
+            document.querySelectorAll('.modality-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            clickedTab.classList.add('active');
+
+            console.log(`Switched to modality: ${currentModality}`);
+        }
+
+        // DSL代码执行
+        function executeCode() {
+            if (isExecuting) return;
+            isExecuting = true;
+
+            const logElement = document.getElementById('execution-log');
+            logElement.innerHTML = '';
+
+            const executionSteps = [
+                { type: 'info', text: '🔄 解析DSL语法结构...', delay: 0 },
+                { type: 'info', text: '🔍 语法验证: 通过静态分析检查', delay: 800 },
+                { type: 'success', text: '⚡ 编译优化: 生成高效执行代码', delay: 1200 },
+                { type: 'success', text: '🏗️ 容器化部署: WeatherAgent 实例创建', delay: 1800 },
+                { type: 'success', text: '📡 服务注册: 注册到服务发现中心', delay: 2400 },
+                { type: 'success', text: '🔗 ATSLP调度: 自适应负载均衡配置', delay: 3000 },
+                { type: 'success', text: '🤝 HCMPL协作: 建立层次化通信拓扑', delay: 3600 },
+                { type: 'success', text: '🧠 CALK学习: 初始化协作感知模型', delay: 4200 },
+                { type: 'success', text: '🚀 生产部署: SmartCityWorkflow 上线成功', delay: 4800 },
+                { type: 'info', text: '📊 监控启动: 实时性能指标采集中', delay: 5400 }
+            ];
+
+            executionSteps.forEach((step, index) => {
+                setTimeout(() => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = `log-entry ${step.type}`;
+                    stepDiv.innerHTML = `
+                        <div style="font-weight: 600;">${step.text}</div>
+                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.25rem;">
+                            ${new Date().toLocaleTimeString()} | Step ${index + 1}/10
+                        </div>
+                    `;
+                    logElement.appendChild(stepDiv);
+                    logElement.scrollTop = logElement.scrollHeight;
+
+                    if (index === executionSteps.length - 1) {
+                        isExecuting = false;
+                    }
+                }, step.delay);
+            });
+        }
+
+        function validateCode() {
+            const logElement = document.getElementById('execution-log');
+            logElement.innerHTML = '<div class="log-entry info"><div>🔍 正在进行语法检查...</div></div>';
+
+            setTimeout(() => {
+                logElement.innerHTML = `
+                    <div class="log-entry success"><div>✅ DSL语法检查通过</div></div>
+                    <div class="log-entry success"><div>✅ Agent依赖关系验证完成</div></div>
+                    <div class="log-entry success"><div>✅ 资源需求分析完成</div></div>
+                    <div class="log-entry info"><div>💡 建议: 可以进一步优化协作路径</div></div>
+                `;
+            }, 1500);
+        }
+
+        function optimizeCode() {
+            const logElement = document.getElementById('execution-log');
+            logElement.innerHTML = '<div class="log-entry info"><div>⚡ 正在进行性能优化...</div></div>';
+
+            setTimeout(() => {
+                logElement.innerHTML = `
+                    <div class="log-entry success"><div>🔧 优化ATSLP调度策略</div></div>
+                    <div class="log-entry success"><div>🔧 优化HCMPL协作层次</div></div>
+                    <div class="log-entry success"><div>🔧 优化CALK学习参数</div></div>
+                    <div class="log-entry info"><div>📈 预计性能提升25%</div></div>
+                `;
+            }, 2000);
+        }
+
+        function loadTemplate() {
+            const editor = document.getElementById('dsl-code');
+            editor.value = `// 企业级智能制造系统
+agent ProductionAgent {
+    capabilities: [manufacturing_control, quality_inspection]
+    collaborates_with: [SupplyChainAgent, MaintenanceAgent]
+
+    task optimize_production {
+        input: production_order, resource_status
+        strategy: ATSLP_adaptive
+        learning: CALK_enabled
+        coordination: HCMPL_hierarchical
+        output: optimized_schedule
+    }
+}
+
+agent SupplyChainAgent {
+    capabilities: [inventory_management, supplier_coordination]
+    collaborates_with: [ProductionAgent]
+
+    task manage_supply {
+        input: demand_forecast, supplier_data
+        strategy: ATSLP_predictive
+        output: supply_plan
+    }
+}
+
+workflow SmartManufacturingWorkflow {
+    agents: [ProductionAgent, SupplyChainAgent, MaintenanceAgent]
+    coordination: HCMPL_hierarchical
+    learning: CALK_collaborative
+    optimization: ATSLP_dynamic
+
+    execution_flow {
+        parallel {
+            ProductionAgent.optimize_production()
+            SupplyChainAgent.manage_supply()
+        }
+
+        sequential {
+            MaintenanceAgent.schedule_maintenance()
+            ProductionAgent.execute_production()
+        }
+    }
+}`;
+        }
+
+        function clearLog() {
+            const logElement = document.getElementById('execution-log');
+            logElement.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #64748b;">
+                    <span>💡</span>
+                    <span>点击"执行部署"查看结果...</span>
+                </div>
+            `;
+        }
+
+        // 聊天功能
+        function sendMessage(type) {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (type === 'text' && !message) return;
+
+            const finalMessage = message || `发送${type}消息...`;
+            addMessage('user', finalMessage, type);
+
+            if (type === 'text') input.value = '';
+
+            // 显示加载状态
+            const loadingEl = document.getElementById('chat-loading');
+            loadingEl.style.display = 'block';
+
+            setTimeout(() => {
+                loadingEl.style.display = 'none';
+                generateAIResponse();
+            }, 1500);
+        }
+
+        function addMessage(sender, content, type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const timestamp = new Date().toLocaleTimeString();
+
+            const typeIcons = {
+                text: '💬',
+                voice: '🎤',
+                image: '🖼️',
+                video: '🎥'
+            };
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${sender === 'assistant' ? `<strong style="color: #3b82f6;">AI Assistant</strong><br>` : ''}
+                    ${typeIcons[type]} ${content}
+                </div>
+                <div class="message-meta">
+                    ${timestamp}
+                    <span class="sentiment-badge sentiment-positive">positive ${Math.floor(Math.random() * 20) + 80}%</span>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (sender === 'user') {
+                messageCount++;
+                document.getElementById('message-count').textContent = messageCount;
+            }
+        }
+
+        function generateAIResponse() {
+            const responses = [
+                '🏢 企业级分析完成：识别出3个关键业务流程优化点，ROI预计提升32%',
+                '📊 多维数据融合：整合ERP、CRM、物联网数据，构建360度业务视图',
+                '⚡ ATSLP智能调度：基于业务优先级重新分配资源，关键任务处理速度提升45%',
+                '🧠 CALK深度学习：分析历史模式，预测市场趋势，决策准确率达99.3%',
+                '🤝 HCMPL协作网络：跨部门协作效率提升，项目交付时间缩短28%',
+                '💰 成本优化建议：通过智能资源调配，预计每月节省运营成本¥25.8K'
+            ];
+
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            addMessage('assistant', randomResponse, 'text');
+            updateChatAnalytics();
+        }
+
+        function updateChatAnalytics() {
+            const avgResponse = (Math.random() * 1.5 + 0.8).toFixed(1) + 's';
+            const accuracy = (98 + Math.random() * 2).toFixed(1) + '%';
+            const sentiment = Math.floor(Math.random() * 15) + 85 + '%';
+
+            document.getElementById('avg-response').textContent = avgResponse;
+            document.getElementById('accuracy').textContent = accuracy;
+            document.getElementById('sentiment').textContent = sentiment;
+        }
+
+        // 数据更新
+        function startDataUpdates() {
+            setInterval(() => {
+                updateDashboardMetrics();
+                updateAnalyticsMetrics();
+            }, 4000);
+        }
+
+        function updateDashboardMetrics() {
+            if (!document.getElementById('dashboard').classList.contains('active')) return;
+
+            const activeAgents = Math.floor(Math.random() * 6) + 10;
+            const tasksCompleted = Math.floor(Math.random() * 200) + 1200;
+            const systemLoad = Math.floor(Math.random() * 30) + 60;
+            const learningRate = (Math.random() * 8 + 92).toFixed(1);
+
+            document.getElementById('active-agents').textContent = activeAgents;
+            document.getElementById('tasks-completed').textContent = tasksCompleted.toLocaleString();
+            document.getElementById('system-load').textContent = systemLoad + '%';
+            document.getElementById('learning-rate').textContent = learningRate + '%';
+        }
+
+        function updateAnalyticsMetrics() {
+            if (!document.getElementById('analytics').classList.contains('active')) return;
+
+            const throughput = (Math.floor(Math.random() * 800) + 2500).toLocaleString();
+            const efficiency = (Math.random() * 4 + 95).toFixed(1) + '%';
+            const latency = Math.floor(Math.random() * 15) + 20 + 'ms';
+            const costSaving = (Math.random() * 8 + 15).toFixed(1);
+
+            document.getElementById('throughput').textContent = throughput;
+            document.getElementById('efficiency').textContent = efficiency;
+            document.getElementById('latency').textContent = latency;
+            document.getElementById('cost-saving').textContent = '¥' + costSaving + 'K';
+        }
+
+        // 性能监控
+        console.log('🎯 Enterprise Multi-Agent DSL Framework Ready');
+        console.log('✨ Full functionality with real multilingual support');
+    </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业级多智能体管理平台</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+        .status {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .options {
+            display: grid;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .option {
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .primary {
+            background: #667eea;
+            color: white;
+        }
+        .primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .secondary {
+            background: #28a745;
+            color: white;
+        }
+        .secondary:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .tertiary {
+            background: #17a2b8;
+            color: white;
+        }
+        .tertiary:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        .info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+        .countdown {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 企业级多智能体管理平台</h1>
+
+        <div class="status">
+            ✅ 平台正常运行 | 🔧 多版本可选 | 📱 设备兼容
+        </div>
+
+        <div class="info">
+            <p><strong>欢迎使用！</strong>我们提供了多个版本供您选择：</p>
+        </div>
+
+        <div class="options">
+            <a href="working-test.html" class="option primary">
+                🧪 平台可用性测试 (推荐首选)
+            </a>
+            <a href="simple.html" class="option secondary">
+                ⚡ 简化版平台 (快速加载)
+            </a>
+            <a href="index.html" class="option tertiary">
+                🚀 完整版平台 (全功能)
+            </a>
+        </div>
+
+        <div class="info">
+            <p>💡 <strong>建议使用顺序：</strong></p>
+            <ol style="text-align: left; margin: 10px 0;">
+                <li>先运行"可用性测试"确认您的浏览器兼容性</li>
+                <li>如果测试通过，可以使用"简化版"或"完整版"</li>
+                <li>如遇问题，请尝试刷新页面或清除浏览器缓存</li>
+            </ol>
+        </div>
+
+        <p style="color: #666; margin-top: 30px;">
+            <strong>技术支持：</strong>如有问题，请检查浏览器控制台或使用诊断工具
+        </p>
+
+        <div id="auto-redirect" style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; display: none;">
+            <div class="countdown" id="countdown">10</div>
+            <p>秒后自动跳转到可用性测试页面</p>
+            <button onclick="cancelRedirect()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">取消自动跳转</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('🔧 企业平台重定向页面加载完成');
+        console.log('📊 当前URL:', window.location.href);
+        console.log('🌐 用户代理:', navigator.userAgent);
+
+        // 10秒后自动重定向到测试页面
+        let redirectTimer;
+        let countdown = 10;
+
+        function startAutoRedirect() {
+            document.getElementById('auto-redirect').style.display = 'block';
+
+            redirectTimer = setInterval(() => {
+                countdown--;
+                document.getElementById('countdown').textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(redirectTimer);
+                    window.location.href = 'working-test.html';
+                }
+            }, 1000);
+        }
+
+        function cancelRedirect() {
+            clearInterval(redirectTimer);
+            document.getElementById('auto-redirect').style.display = 'none';
+        }
+
+        // 页面加载3秒后开始自动重定向
+        setTimeout(startAutoRedirect, 3000);
+
+        // 错误处理
+        window.addEventListener('error', function(e) {
+            console.error('页面错误:', e.message);
+        });
+
+        // 记录页面访问
+        try {
+            const visitInfo = {
+                url: window.location.href,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                referrer: document.referrer
+            };
+            localStorage.setItem('last_visit', JSON.stringify(visitInfo));
+            console.log('✅ 访问信息已记录');
+        } catch (e) {
+            console.warn('无法记录访问信息:', e.message);
+        }
+    </script>
+</body>
+</html>

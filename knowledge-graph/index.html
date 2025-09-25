@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph - Multi-Agent DSL Framework</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lang-switch {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e40af;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .knowledge-graph-container {
+            width: 100%;
+            height: 600px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .legend-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e40af;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.3rem 0;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(29, 78, 216, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #3b82f6;
+            background: white;
+            color: #3b82f6;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        @keyframes nodeHighlight {
+            0%, 100% {
+                stroke-width: 3;
+                stroke: #3b82f6;
+            }
+            50% {
+                stroke-width: 5;
+                stroke: #1e40af;
+            }
+        }
+
+        .highlighted {
+            animation: nodeHighlight 1s ease-in-out infinite;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .controls {
+                position: static;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+
+            .legend {
+                position: static;
+                margin-bottom: 1rem;
+            }
+
+            .knowledge-graph-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-project-diagram"></i>
+                <span data-lang="title">Knowledge Graph</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="../enterprise-platform/"><i class="fas fa-code"></i> <span data-lang="nav-dsl-demo">DSL Demo</span></a></li>
+                    <li><a href="../enterprise-platform/#agents"><i class="fas fa-users"></i> <span data-lang="nav-agent-management">Agent Management</span></a></li>
+                    <li><a href="../multimodal/"><i class="fas fa-comments"></i> <span data-lang="nav-multimodal-chat">Multi-modal Chat</span></a></li>
+                    <li><a href="#" class="active"><i class="fas fa-project-diagram"></i> <span data-lang="nav-knowledge-graph">Knowledge Graph</span></a></li>
+                    <li><a href="../enterprise-platform/#dashboard"><i class="fas fa-tachometer-alt"></i> <span data-lang="nav-dashboard">Dashboard</span></a></li>
+                </ul>
+            </nav>
+            <div class="lang-switch" onclick="toggleLanguage()">
+                <i class="fas fa-globe"></i>
+                <span id="current-lang">🇺🇸 English</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="section-card">
+            <h1 class="section-title">
+                <i class="fas fa-project-diagram"></i>
+                <span data-lang="knowledge-graph-title">Multi-Agent DSL Framework Knowledge Graph</span>
+            </h1>
+
+            <!-- 搜索框 -->
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-input" placeholder="搜索节点和描述..." data-lang-placeholder="search-placeholder">
+            </div>
+
+            <!-- 过滤器 -->
+            <div class="filter-section">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="fas fa-globe"></i>
+                    <span data-lang="filter-all">All Types</span>
+                </button>
+                <button class="filter-btn" data-filter="framework">
+                    <i class="fas fa-cog"></i>
+                    <span data-lang="filter-framework">Core Framework</span>
+                </button>
+                <button class="filter-btn" data-filter="algorithm">
+                    <i class="fas fa-brain"></i>
+                    <span data-lang="filter-algorithms">Core Algorithms</span>
+                </button>
+                <button class="filter-btn" data-filter="agent">
+                    <i class="fas fa-robot"></i>
+                    <span data-lang="filter-agents">Intelligent Agents</span>
+                </button>
+                <button class="filter-btn" data-filter="component">
+                    <i class="fas fa-cube"></i>
+                    <span data-lang="filter-components">System Components</span>
+                </button>
+            </div>
+
+            <!-- 知识图谱容器 -->
+            <div class="knowledge-graph-container">
+                <!-- 图例 -->
+                <div class="legend">
+                    <div class="legend-title" data-lang="legend-title">Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3b82f6;"></div>
+                        <span data-lang="legend-framework">Core Framework</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span data-lang="legend-algorithms">Core Algorithms</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span data-lang="legend-agents">Intelligent Agents</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span data-lang="legend-components">System Components</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #8b5cf6;"></div>
+                        <span data-lang="legend-analytics">Monitoring & Analytics</span>
+                    </div>
+                </div>
+
+                <!-- 控制按钮 -->
+                <div class="controls">
+                    <button class="control-btn" onclick="resetGraph()">
+                        <i class="fas fa-refresh"></i>
+                        <span data-lang="reset-graph">Reset</span>
+                    </button>
+                    <button class="control-btn" onclick="toggleAnimation()">
+                        <i class="fas fa-play" id="animation-icon"></i>
+                        <span data-lang="toggle-animation" id="animation-text">Enable Animation</span>
+                    </button>
+                </div>
+
+                <!-- 图谱SVG -->
+                <svg id="knowledge-graph-svg" width="100%" height="100%"></svg>
+
+                <!-- 工具提示 -->
+                <div class="tooltip" id="tooltip"></div>
+            </div>
+        </div>
+
+        <!-- 返回主页链接 -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="../" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-home"></i>
+                <span data-lang="back-home">返回主页</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 多语言支持
+        const languages = {
+            'zh': {
+                'title': '知识图谱',
+                'nav-dsl-demo': 'DSL 演示',
+                'nav-agent-management': 'Agent 管理',
+                'nav-multimodal-chat': '多模态聊天',
+                'nav-knowledge-graph': '知识图谱',
+                'nav-dashboard': '仪表板',
+                'knowledge-graph-title': '多智能体DSL框架知识图谱',
+                'search-placeholder': '搜索节点和描述...',
+                'filter-all': '所有类型',
+                'filter-framework': '核心框架',
+                'filter-algorithms': '核心算法',
+                'filter-agents': '智能体',
+                'filter-components': '系统组件',
+                'legend-title': '图例',
+                'legend-framework': '核心框架',
+                'legend-algorithms': '核心算法',
+                'legend-agents': '智能体',
+                'legend-components': '系统组件',
+                'legend-analytics': '监控分析',
+                'reset-graph': '重置',
+                'toggle-animation': '启用动画',
+                'back-home': '返回主页'
+            },
+            'en': {
+                'title': 'Knowledge Graph',
+                'nav-dsl-demo': 'DSL Demo',
+                'nav-agent-management': 'Agent Management',
+                'nav-multimodal-chat': 'Multi-modal Chat',
+                'nav-knowledge-graph': 'Knowledge Graph',
+                'nav-dashboard': 'Dashboard',
+                'knowledge-graph-title': 'Multi-Agent DSL Framework Knowledge Graph',
+                'search-placeholder': 'Search nodes and descriptions...',
+                'filter-all': 'All Types',
+                'filter-framework': 'Core Framework',
+                'filter-algorithms': 'Core Algorithms',
+                'filter-agents': 'Intelligent Agents',
+                'filter-components': 'System Components',
+                'legend-title': 'Legend',
+                'legend-framework': 'Core Framework',
+                'legend-algorithms': 'Core Algorithms',
+                'legend-agents': 'Intelligent Agents',
+                'legend-components': 'System Components',
+                'legend-analytics': 'Monitoring & Analytics',
+                'reset-graph': 'Reset',
+                'toggle-animation': 'Enable Animation',
+                'back-home': 'Back Home'
+            }
+        };
+
+        let currentLang = 'zh';
+        let animationEnabled = false;
+        let currentFilter = 'all';
+        let simulation;
+        let svg, g;
+        let tooltip;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+            document.getElementById('current-lang').textContent =
+                currentLang === 'zh' ? '🇺🇸 English' : '🇨🇳 中文';
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (languages[currentLang][key]) {
+                    element.textContent = languages[currentLang][key];
+                }
+            });
+
+            // 更新占位符文本
+            const placeholderElements = document.querySelectorAll('[data-lang-placeholder]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-lang-placeholder');
+                if (languages[currentLang][key]) {
+                    element.placeholder = languages[currentLang][key];
+                }
+            });
+        }
+
+        // 知识图谱数据
+        const graphData = {
+            nodes: [
+                // 核心框架
+                { id: 'MultiAgent', group: 'framework', type: 'Core Framework' },
+
+                // 核心算法
+                { id: 'ATSLP', group: 'algorithm', type: 'Core Algorithm' },
+                { id: 'HCMPL', group: 'algorithm', type: 'Core Algorithm' },
+                { id: 'CALK', group: 'algorithm', type: 'Core Algorithm' },
+
+                // 智能体
+                { id: 'Weather', group: 'agent', type: 'Weather Agent' },
+                { id: 'Traffic', group: 'agent', type: 'Traffic Agent' },
+                { id: 'Parking', group: 'agent', type: 'Parking Agent' },
+                { id: 'Safety', group: 'agent', type: 'Safety Agent' },
+                { id: 'EMS', group: 'agent', type: 'Emergency Agent' },
+
+                // 系统组件
+                { id: 'TaskBuilder', group: 'component', type: 'Task Builder' },
+                { id: 'AgentManager', group: 'component', type: 'Agent Manager' },
+                { id: 'LLMIntegration', group: 'component', type: 'LLM Integration' },
+
+                // 监控分析
+                { id: 'MetricsCollector', group: 'analytics', type: 'Metrics Collector' },
+                { id: 'PerformanceMonitor', group: 'analytics', type: 'Performance Monitor' },
+                { id: 'KnowledgeBase', group: 'analytics', type: 'Knowledge Base' }
+            ],
+            links: [
+                // 核心框架连接
+                { source: 'MultiAgent', target: 'ATSLP', type: 'uses' },
+                { source: 'MultiAgent', target: 'HCMPL', type: 'uses' },
+                { source: 'MultiAgent', target: 'CALK', type: 'uses' },
+
+                // 算法与智能体连接
+                { source: 'ATSLP', target: 'Weather', type: 'schedules' },
+                { source: 'ATSLP', target: 'Traffic', type: 'schedules' },
+                { source: 'ATSLP', target: 'Parking', type: 'schedules' },
+                { source: 'HCMPL', target: 'Safety', type: 'coordinates' },
+                { source: 'HCMPL', target: 'EMS', type: 'coordinates' },
+                { source: 'CALK', target: 'Weather', type: 'learns_from' },
+                { source: 'CALK', target: 'Traffic', type: 'learns_from' },
+
+                // 系统组件连接
+                { source: 'MultiAgent', target: 'TaskBuilder', type: 'manages' },
+                { source: 'MultiAgent', target: 'AgentManager', type: 'manages' },
+                { source: 'MultiAgent', target: 'LLMIntegration', type: 'integrates' },
+
+                // 智能体协作
+                { source: 'Weather', target: 'Traffic', type: 'collaborates' },
+                { source: 'Traffic', target: 'Parking', type: 'collaborates' },
+                { source: 'Safety', target: 'EMS', type: 'collaborates' },
+
+                // 监控分析连接
+                { source: 'MultiAgent', target: 'MetricsCollector', type: 'monitors' },
+                { source: 'MetricsCollector', target: 'PerformanceMonitor', type: 'feeds' },
+                { source: 'CALK', target: 'KnowledgeBase', type: 'stores_in' },
+
+                // 组件与智能体连接
+                { source: 'TaskBuilder', target: 'Weather', type: 'builds_tasks' },
+                { source: 'TaskBuilder', target: 'Traffic', type: 'builds_tasks' },
+                { source: 'AgentManager', target: 'Safety', type: 'manages' },
+                { source: 'AgentManager', target: 'EMS', type: 'manages' }
+            ]
+        };
+
+        // 颜色映射
+        const colorMap = {
+            'framework': '#3b82f6',
+            'algorithm': '#ef4444',
+            'agent': '#10b981',
+            'component': '#f59e0b',
+            'analytics': '#8b5cf6'
+        };
+
+        function initKnowledgeGraph() {
+            const container = document.getElementById('knowledge-graph-svg');
+            const rect = container.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+
+            svg = d3.select('#knowledge-graph-svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            g = svg.append('g');
+            tooltip = d3.select('#tooltip');
+
+            // 缩放和拖拽
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+
+            svg.call(zoom);
+
+            // 力导向布局
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(40));
+
+            renderGraph();
+        }
+
+        function renderGraph() {
+            // 清空现有内容
+            g.selectAll('*').remove();
+
+            // 过滤数据
+            let filteredNodes = graphData.nodes;
+            let filteredLinks = graphData.links;
+
+            if (currentFilter !== 'all') {
+                filteredNodes = graphData.nodes.filter(d => d.group === currentFilter);
+                const nodeIds = new Set(filteredNodes.map(d => d.id));
+                filteredLinks = graphData.links.filter(d => nodeIds.has(d.source.id || d.source) && nodeIds.has(d.target.id || d.target));
+            }
+
+            // 绘制连接线
+            const link = g.append('g')
+                .selectAll('line')
+                .data(filteredLinks)
+                .enter()
+                .append('line')
+                .attr('stroke', '#94a3b8')
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', d => d.type === 'collaborates' ? '5,5' : null);
+
+            // 绘制节点
+            const node = g.append('g')
+                .selectAll('circle')
+                .data(filteredNodes)
+                .enter()
+                .append('circle')
+                .attr('r', d => d.group === 'framework' ? 25 : 20)
+                .attr('fill', d => colorMap[d.group])
+                .attr('stroke', '#ffffff')
+                .attr('stroke-width', 3)
+                .style('cursor', 'pointer')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended))
+                .on('mouseover', (event, d) => {
+                    showTooltip(event, d);
+                })
+                .on('mouseout', () => {
+                    hideTooltip();
+                })
+                .on('click', (event, d) => {
+                    highlightNode(d);
+                });
+
+            // 添加标签
+            const label = g.append('g')
+                .selectAll('text')
+                .data(filteredNodes)
+                .enter()
+                .append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', '.35em')
+                .attr('fill', 'white')
+                .attr('font-size', '12px')
+                .attr('font-weight', 'bold')
+                .attr('pointer-events', 'none')
+                .text(d => d.id);
+
+            // 更新仿真
+            simulation.nodes(filteredNodes);
+            simulation.force('link').links(filteredLinks);
+            simulation.restart();
+
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                label
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function showTooltip(event, d) {
+            tooltip
+                .style('opacity', 1)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px')
+                .html(`<strong>${d.id}</strong><br>${d.type}`);
+        }
+
+        function hideTooltip() {
+            tooltip.style('opacity', 0);
+        }
+
+        function highlightNode(d) {
+            // 移除之前的高亮
+            g.selectAll('circle').classed('highlighted', false);
+
+            // 高亮选中节点
+            g.selectAll('circle')
+                .filter(node => node.id === d.id)
+                .classed('highlighted', true);
+        }
+
+        function resetGraph() {
+            // 重置缩放
+            const svg = d3.select('#knowledge-graph-svg');
+            svg.transition().duration(750).call(
+                d3.zoom().transform,
+                d3.zoomIdentity
+            );
+
+            // 移除高亮
+            g.selectAll('circle').classed('highlighted', false);
+        }
+
+        function toggleAnimation() {
+            animationEnabled = !animationEnabled;
+            const icon = document.getElementById('animation-icon');
+            const text = document.getElementById('animation-text');
+
+            if (animationEnabled) {
+                icon.className = 'fas fa-pause';
+                text.textContent = currentLang === 'zh' ? '暂停动画' : 'Disable Animation';
+                simulation.restart();
+            } else {
+                icon.className = 'fas fa-play';
+                text.textContent = currentLang === 'zh' ? '启用动画' : 'Enable Animation';
+                simulation.stop();
+            }
+        }
+
+        // 过滤器功能
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                currentFilter = btn.getAttribute('data-filter');
+                renderGraph();
+            });
+        });
+
+        // 搜索功能
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+
+            if (query) {
+                const matchedNodes = graphData.nodes.filter(node =>
+                    node.id.toLowerCase().includes(query) ||
+                    node.type.toLowerCase().includes(query)
+                );
+
+                // 高亮匹配的节点
+                g.selectAll('circle').classed('highlighted', false);
+                g.selectAll('circle')
+                    .filter(d => matchedNodes.some(node => node.id === d.id))
+                    .classed('highlighted', true);
+            } else {
+                g.selectAll('circle').classed('highlighted', false);
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+            setTimeout(initKnowledgeGraph, 100);
+
+            // 窗口大小变化时重新初始化
+            window.addEventListener('resize', () => {
+                setTimeout(initKnowledgeGraph, 100);
+            });
+        });
+    </script>
+</body>
+</html>

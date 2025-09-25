@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-modal Chat - Multi-Agent DSL Framework</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lang-switch {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            min-height: calc(100vh - 80px);
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e40af;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+            min-height: 400px;
+            max-height: 400px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            padding: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.25rem;
+        }
+
+        .message.user .message-bubble {
+            background: #3b82f6;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: #e5e7eb;
+            color: #374151;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-meta {
+            font-size: 0.8rem;
+            color: #6b7280;
+            padding: 0 1rem;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .input-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .input-btn.secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .input-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .modality-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modality-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #3b82f6;
+            background: white;
+            color: #3b82f6;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modality-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .modality-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .analytics-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .analytics-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .sentiment-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .sentiment-positive {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .sentiment-neutral {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .sentiment-negative {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        .recording-indicator {
+            display: none;
+            color: #ef4444;
+            font-weight: 600;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modality-buttons {
+                flex-wrap: wrap;
+            }
+
+            .chat-input-container {
+                flex-direction: column;
+            }
+
+            .input-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-comments"></i>
+                <span data-lang="title">Multi-modal Chat</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="../enterprise-platform/"><i class="fas fa-code"></i> <span data-lang="nav-dsl-demo">DSL Demo</span></a></li>
+                    <li><a href="../enterprise-platform/#agents"><i class="fas fa-users"></i> <span data-lang="nav-agent-management">Agent Management</span></a></li>
+                    <li><a href="#" class="active"><i class="fas fa-comments"></i> <span data-lang="nav-multimodal-chat">Multi-modal Chat</span></a></li>
+                    <li><a href="../knowledge-graph/"><i class="fas fa-project-diagram"></i> <span data-lang="nav-knowledge-graph">Knowledge Graph</span></a></li>
+                    <li><a href="../enterprise-platform/#dashboard"><i class="fas fa-tachometer-alt"></i> <span data-lang="nav-dashboard">Dashboard</span></a></li>
+                </ul>
+            </nav>
+            <div class="lang-switch" onclick="toggleLanguage()">
+                <i class="fas fa-globe"></i>
+                <span id="current-lang">🇺🇸 English</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="section-card">
+            <h1 class="section-title">
+                <i class="fas fa-comments"></i>
+                <span data-lang="multimodal-chat-title">Multi-modal Intelligent Chat</span>
+            </h1>
+
+            <div class="dashboard-grid">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2 style="color: #1e40af; margin: 0;" data-lang="chat-interface">Chat Interface</h2>
+                        <div class="recording-indicator" id="recording-indicator">
+                            <i class="fas fa-microphone"></i>
+                            <span data-lang="recording">Recording...</span>
+                        </div>
+                    </div>
+
+                    <!-- 模态选择按钮 -->
+                    <div class="modality-buttons">
+                        <button class="modality-btn active" data-modality="text">
+                            <i class="fas fa-font"></i>
+                            <span data-lang="text-mode">文字</span>
+                        </button>
+                        <button class="modality-btn" data-modality="voice">
+                            <i class="fas fa-microphone"></i>
+                            <span data-lang="voice-mode">语音</span>
+                        </button>
+                        <button class="modality-btn" data-modality="image">
+                            <i class="fas fa-image"></i>
+                            <span data-lang="image-mode">图像</span>
+                        </button>
+                        <button class="modality-btn" data-modality="video">
+                            <i class="fas fa-video"></i>
+                            <span data-lang="video-mode">视频</span>
+                        </button>
+                    </div>
+
+                    <!-- 聊天消息区域 -->
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message user">
+                            <div class="message-bubble">您好呀</div>
+                            <div class="message-meta">
+                                20:48:33 😊
+                                <span class="sentiment-indicator sentiment-positive">positive 100%</span>
+                            </div>
+                        </div>
+
+                        <div class="message assistant">
+                            <div class="message-bubble">
+                                <strong style="color: #3b82f6;">AI Assistant</strong><br>
+                                ✅ATSLP任务调度完成: 识别到11个任务，优化负载分布，预计性能提升72.7%
+                            </div>
+                            <div class="message-meta">
+                                20:48:35 😊
+                                <span class="sentiment-indicator sentiment-positive">positive 85%</span>
+                            </div>
+                        </div>
+
+                        <div class="message assistant">
+                            <div class="message-bubble">
+                                <strong style="color: #3b82f6;">AI Assistant</strong><br>
+                                ✅CALK协作学习完成: 多智能体协作分析数据，知识共享优化策略已更新
+                            </div>
+                            <div class="message-meta">
+                                20:48:36 🤖
+                                <span class="sentiment-indicator sentiment-neutral">neutral 95%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 文件上传区域 -->
+                    <div class="file-upload-area" id="file-upload-area" style="display: none;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #6b7280; margin-bottom: 1rem;"></i>
+                        <p data-lang="upload-prompt">拖拽文件到这里或点击上传</p>
+                        <input type="file" id="file-input" style="display: none;" accept="image/*,video/*,audio/*">
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="输入您的问题..." data-lang-placeholder="chat-placeholder">
+                        <div class="input-buttons">
+                            <button class="input-btn secondary" onclick="sendMessage('voice')" title="语音输入">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="input-btn secondary" onclick="sendMessage('image')" title="图像输入">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button class="input-btn primary" onclick="sendMessage('text')" title="发送消息">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-panel">
+                    <h3 class="analytics-title">
+                        <i class="fas fa-chart-pie"></i>
+                        <span data-lang="realtime-analytics">实时分析</span>
+                    </h3>
+
+                    <div class="stat-item">
+                        <span class="stat-label" data-lang="total-messages">消息总数</span>
+                        <span class="stat-value" id="message-count">3</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label" data-lang="avg-response">平均响应时间</span>
+                        <span class="stat-value" id="avg-response">1.2s</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label" data-lang="accuracy">准确率</span>
+                        <span class="stat-value" id="accuracy">98.8%</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label" data-lang="sentiment-score">情感分数</span>
+                        <span class="stat-value" style="color: #16a34a;" id="sentiment">93%</span>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h4 style="color: #1e40af; margin-bottom: 1rem;" data-lang="recent-activity">最近活动</h4>
+                        <div style="font-size: 0.9rem; color: #6b7280;">
+                            <div style="margin-bottom: 0.5rem;">
+                                🎤 <span data-lang="voice-processed">语音处理完成</span> - 1.2s
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                🧠 <span data-lang="nlp-analysis">NLP分析完成</span> - 0.8s
+                            </div>
+                            <div>
+                                ⚡ <span data-lang="response-generated">响应生成完成</span> - 0.5s
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返回主页链接 -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="../" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-home"></i>
+                <span data-lang="back-home">返回主页</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 多语言支持
+        const languages = {
+            'zh': {
+                'title': '多模态聊天',
+                'nav-dsl-demo': 'DSL 演示',
+                'nav-agent-management': 'Agent 管理',
+                'nav-multimodal-chat': '多模态聊天',
+                'nav-knowledge-graph': '知识图谱',
+                'nav-dashboard': '仪表板',
+                'multimodal-chat-title': '多模态智能聊天',
+                'chat-interface': '聊天界面',
+                'recording': '录音中...',
+                'text-mode': '文字',
+                'voice-mode': '语音',
+                'image-mode': '图像',
+                'video-mode': '视频',
+                'upload-prompt': '拖拽文件到这里或点击上传',
+                'chat-placeholder': '输入您的问题...',
+                'realtime-analytics': '实时分析',
+                'total-messages': '消息总数',
+                'avg-response': '平均响应时间',
+                'accuracy': '准确率',
+                'sentiment-score': '情感分数',
+                'recent-activity': '最近活动',
+                'voice-processed': '语音处理完成',
+                'nlp-analysis': 'NLP分析完成',
+                'response-generated': '响应生成完成',
+                'back-home': '返回主页'
+            },
+            'en': {
+                'title': 'Multi-modal Chat',
+                'nav-dsl-demo': 'DSL Demo',
+                'nav-agent-management': 'Agent Management',
+                'nav-multimodal-chat': 'Multi-modal Chat',
+                'nav-knowledge-graph': 'Knowledge Graph',
+                'nav-dashboard': 'Dashboard',
+                'multimodal-chat-title': 'Multi-modal Intelligent Chat',
+                'chat-interface': 'Chat Interface',
+                'recording': 'Recording...',
+                'text-mode': 'Text',
+                'voice-mode': 'Voice',
+                'image-mode': 'Image',
+                'video-mode': 'Video',
+                'upload-prompt': 'Drag files here or click to upload',
+                'chat-placeholder': 'Enter your question...',
+                'realtime-analytics': 'Real-time Analytics',
+                'total-messages': 'Total Messages',
+                'avg-response': 'Avg Response Time',
+                'accuracy': 'Accuracy',
+                'sentiment-score': 'Sentiment Score',
+                'recent-activity': 'Recent Activity',
+                'voice-processed': 'Voice processing completed',
+                'nlp-analysis': 'NLP analysis completed',
+                'response-generated': 'Response generated',
+                'back-home': 'Back Home'
+            }
+        };
+
+        let currentLang = 'zh';
+        let currentModality = 'text';
+        let messageCount = 3;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+            document.getElementById('current-lang').textContent =
+                currentLang === 'zh' ? '🇺🇸 English' : '🇨🇳 中文';
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (languages[currentLang][key]) {
+                    element.textContent = languages[currentLang][key];
+                }
+            });
+
+            // 更新占位符文本
+            const placeholderElements = document.querySelectorAll('[data-lang-placeholder]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-lang-placeholder');
+                if (languages[currentLang][key]) {
+                    element.placeholder = languages[currentLang][key];
+                }
+            });
+        }
+
+        // 模态切换
+        document.querySelectorAll('.modality-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.modality-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                currentModality = btn.getAttribute('data-modality');
+
+                // 显示/隐藏文件上传区域
+                const fileUploadArea = document.getElementById('file-upload-area');
+                if (currentModality === 'image' || currentModality === 'video') {
+                    fileUploadArea.style.display = 'block';
+                } else {
+                    fileUploadArea.style.display = 'none';
+                }
+            });
+        });
+
+        // 发送消息
+        function sendMessage(type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const input = document.getElementById('chat-input');
+            const message = input.value || `发送${type}消息...`;
+
+            if (type === 'voice') {
+                // 模拟录音
+                const recordingIndicator = document.getElementById('recording-indicator');
+                recordingIndicator.style.display = 'inline-flex';
+
+                setTimeout(() => {
+                    recordingIndicator.style.display = 'none';
+                    addMessage('user', message, type);
+                    generateResponse();
+                }, 2000);
+                return;
+            }
+
+            if (input.value.trim() === '' && type === 'text') return;
+
+            addMessage('user', message, type);
+            input.value = '';
+
+            // 模拟AI响应
+            setTimeout(generateResponse, 1000);
+        }
+
+        function addMessage(sender, content, type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const timestamp = new Date().toLocaleTimeString();
+            const messageId = Date.now();
+
+            let typeIcon = '💬';
+            if (type === 'voice') typeIcon = '🎤';
+            else if (type === 'image') typeIcon = '🖼️';
+            else if (type === 'video') typeIcon = '🎥';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${sender === 'assistant' ? '<strong style="color: #3b82f6;">AI Assistant</strong><br>' : ''}
+                    ${typeIcon} ${content}
+                </div>
+                <div class="message-meta">
+                    ${timestamp} 😊
+                    <span class="sentiment-indicator sentiment-positive">positive ${Math.floor(Math.random() * 20) + 80}%</span>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 更新消息计数
+            if (sender === 'user') {
+                messageCount++;
+                document.getElementById('message-count').textContent = messageCount;
+            }
+        }
+
+        function generateResponse() {
+            const responses = [
+                '✅ 智能体协作分析完成：检测到新的优化机会，系统性能预计提升15%',
+                '🔍 多模态数据融合：图像、语音、文本信息已完成整合分析',
+                '⚡ ATSLP调度优化：任务分配效率提升，平均响应时间减少25%',
+                '🧠 CALK学习更新：基于用户反馈更新知识库，推理准确率提升到99.2%',
+                '🤝 HCMPL协作优化：多智能体协调机制已优化，任务并行度提升30%'
+            ];
+
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            addMessage('assistant', randomResponse, 'text');
+
+            // 更新分析数据
+            updateAnalytics();
+        }
+
+        function updateAnalytics() {
+            // 更新实时数据
+            const avgResponse = (Math.random() * 2 + 0.5).toFixed(1) + 's';
+            const accuracy = (98 + Math.random() * 2).toFixed(1) + '%';
+            const sentiment = Math.floor(Math.random() * 20) + 80 + '%';
+
+            document.getElementById('avg-response').textContent = avgResponse;
+            document.getElementById('accuracy').textContent = accuracy;
+            document.getElementById('sentiment').textContent = sentiment;
+        }
+
+        // 文件上传处理
+        document.getElementById('file-upload-area').addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const fileType = file.type.startsWith('image') ? 'image' :
+                               file.type.startsWith('video') ? 'video' : 'file';
+                addMessage('user', `上传了${fileType}: ${file.name}`, fileType);
+                setTimeout(generateResponse, 1000);
+            }
+        });
+
+        // 回车发送消息
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage('text');
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+
+            // 定时更新分析数据
+            setInterval(updateAnalytics, 5000);
+        });
+    </script>
+</body>
+</html>
