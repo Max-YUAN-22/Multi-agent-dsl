@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knowledge Graph - Multi-Agent DSL Framework</title>
+    <title data-lang="page-title">智能知识图谱 - Multi-Agent DSL Framework</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -18,6 +18,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
+            transition: all 0.3s ease;
         }
 
         .header {
@@ -29,6 +30,7 @@
             top: 0;
             z-index: 1000;
             box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .nav-container {
@@ -49,7 +51,7 @@
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             list-style: none;
         }
 
@@ -57,31 +59,41 @@
             color: white;
             text-decoration: none;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 500;
         }
 
         .nav-links a:hover, .nav-links a.active {
             background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
         }
 
         .lang-switch {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .lang-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
         }
 
         .main-container {
-            margin-top: 80px;
+            margin-top: 90px;
             padding: 2rem;
             max-width: 1400px;
             margin-left: auto;
@@ -89,197 +101,258 @@
         }
 
         .section-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 2rem;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 2.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 35px 100px rgba(0,0,0,0.15);
         }
 
         .section-title {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             color: #1e40af;
-            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 1rem;
         }
 
-        .knowledge-graph-container {
+        .section-subtitle {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            padding: 1.25rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .controls-panel {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .btn-secondary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .btn-accent { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+        .btn-info { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+
+        .graph-container {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            position: relative;
+            min-height: 600px;
+            overflow: hidden;
+            border: 2px solid #374151;
+        }
+
+        #knowledge-graph {
             width: 100%;
             height: 600px;
-            background: #f8fafc;
-            border-radius: 16px;
-            border: 2px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
+            border-radius: 12px;
         }
 
         .legend {
             position: absolute;
             top: 20px;
-            left: 20px;
+            right: 20px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 1rem;
             border-radius: 12px;
+            padding: 1rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            z-index: 10;
+            min-width: 200px;
         }
 
-        .legend-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .legend h4 {
             color: #1e40af;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin: 0.3rem 0;
-            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
         }
 
         .legend-color {
             width: 16px;
             height: 16px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 1rem;
-            z-index: 10;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
 
-        .control-btn {
-            background: rgba(59, 130, 246, 0.9);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .control-btn:hover {
-            background: rgba(29, 78, 216, 0.9);
-            transform: translateY(-2px);
-        }
-
-        .filter-section {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 0.75rem 1.5rem;
-            border: 2px solid #3b82f6;
-            background: white;
-            color: #3b82f6;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .filter-btn.active {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .filter-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .search-container {
-            margin-bottom: 2rem;
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 1.5rem;
+            border-radius: 16px;
             text-align: center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .search-input {
-            width: 100%;
-            max-width: 400px;
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .insights-panel {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #10b981;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .insights-title {
+            color: #065f46;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-item {
+            background: rgba(255, 255, 255, 0.8);
             padding: 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 25px;
-            font-size: 1rem;
-            outline: none;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #10b981;
             transition: all 0.3s ease;
         }
 
-        .search-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        .insight-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
         }
 
-        @keyframes nodeHighlight {
-            0%, 100% {
-                stroke-width: 3;
-                stroke: #3b82f6;
-            }
-            50% {
-                stroke-width: 5;
-                stroke: #1e40af;
-            }
-        }
-
-        .highlighted {
-            animation: nodeHighlight 1s ease-in-out infinite;
-        }
-
-        .tooltip {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 0.5rem;
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 100;
-            font-size: 0.8rem;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
             }
 
-            .controls {
-                position: static;
+            .controls-panel {
                 justify-content: center;
-                margin-bottom: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
             .legend {
-                position: static;
-                margin-bottom: 1rem;
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-top: 1rem;
             }
+        }
 
-            .knowledge-graph-container {
-                height: 400px;
-            }
+        /* 节点和边的样式 */
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.2);
+        }
+
+        .node-text {
+            font-weight: 600;
+            font-size: 12px;
+            fill: #333;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .link {
+            stroke-width: 2;
+            opacity: 0.7;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 200px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -287,114 +360,123 @@
     <header class="header">
         <div class="nav-container">
             <div class="logo">
-                <i class="fas fa-project-diagram"></i>
-                <span data-lang="title">Knowledge Graph</span>
+                <span>🧠</span>
+                <span data-lang="site-title">Multi-Agent DSL Framework</span>
             </div>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="../enterprise-platform/"><i class="fas fa-code"></i> <span data-lang="nav-dsl-demo">DSL Demo</span></a></li>
-                    <li><a href="../enterprise-platform/#agents"><i class="fas fa-users"></i> <span data-lang="nav-agent-management">Agent Management</span></a></li>
-                    <li><a href="../multimodal/"><i class="fas fa-comments"></i> <span data-lang="nav-multimodal-chat">Multi-modal Chat</span></a></li>
-                    <li><a href="#" class="active"><i class="fas fa-project-diagram"></i> <span data-lang="nav-knowledge-graph">Knowledge Graph</span></a></li>
-                    <li><a href="../enterprise-platform/#dashboard"><i class="fas fa-tachometer-alt"></i> <span data-lang="nav-dashboard">Dashboard</span></a></li>
+                    <li><a href="../" data-lang="nav-home"><i class="fas fa-home"></i><span>首页</span></a></li>
+                    <li><a href="../react.html" data-lang="nav-platform"><i class="fas fa-desktop"></i><span>技术平台</span></a></li>
+                    <li><a href="../dsl-demo/" data-lang="nav-dsl"><i class="fas fa-code"></i><span>DSL演示</span></a></li>
+                    <li><a href="#" class="active" data-lang="nav-knowledge"><i class="fas fa-project-diagram"></i><span>知识图谱</span></a></li>
                 </ul>
             </nav>
-            <div class="lang-switch" onclick="toggleLanguage()">
-                <i class="fas fa-globe"></i>
-                <span id="current-lang">🇺🇸 English</span>
-            </div>
+            <button class="lang-switch" onclick="toggleLanguage()">
+                <span>🌐</span>
+                <span id="current-lang" data-lang="lang-switch">English</span>
+            </button>
         </div>
     </header>
 
     <div class="main-container">
         <div class="section-card">
             <h1 class="section-title">
-                <i class="fas fa-project-diagram"></i>
-                <span data-lang="knowledge-graph-title">Multi-Agent DSL Framework Knowledge Graph</span>
+                <span>🧠</span>
+                <span data-lang="main-title">论文核心知识图谱</span>
             </h1>
 
-            <!-- 搜索框 -->
-            <div class="search-container">
-                <input type="text" id="search-input" class="search-input" placeholder="搜索节点和描述..." data-lang-placeholder="search-placeholder">
+            <div class="section-subtitle">
+                <strong data-lang="subtitle-main">多智能体DSL框架核心算法架构</strong> -
+                <span data-lang="subtitle-desc">ATSLP自适应任务调度、HCMPL层次化协作、CALK协作感知学习的完整知识体系</span>
             </div>
 
-            <!-- 过滤器 -->
-            <div class="filter-section">
-                <button class="filter-btn active" data-filter="all">
-                    <i class="fas fa-globe"></i>
-                    <span data-lang="filter-all">All Types</span>
+            <div class="controls-panel">
+                <button class="btn btn-primary" onclick="showFullFramework()">
+                    <span>🔄</span>
+                    <span data-lang="btn-full">完整框架视图</span>
                 </button>
-                <button class="filter-btn" data-filter="framework">
-                    <i class="fas fa-cog"></i>
-                    <span data-lang="filter-framework">Core Framework</span>
+                <button class="btn btn-secondary" onclick="showATSLP()">
+                    <span>⚡</span>
+                    <span data-lang="btn-atslp">ATSLP调度引擎</span>
                 </button>
-                <button class="filter-btn" data-filter="algorithm">
-                    <i class="fas fa-brain"></i>
-                    <span data-lang="filter-algorithms">Core Algorithms</span>
+                <button class="btn btn-accent" onclick="showHCMPL()">
+                    <span>🤝</span>
+                    <span data-lang="btn-hcmpl">HCMPL协作机制</span>
                 </button>
-                <button class="filter-btn" data-filter="agent">
-                    <i class="fas fa-robot"></i>
-                    <span data-lang="filter-agents">Intelligent Agents</span>
-                </button>
-                <button class="filter-btn" data-filter="component">
-                    <i class="fas fa-cube"></i>
-                    <span data-lang="filter-components">System Components</span>
+                <button class="btn btn-info" onclick="showCALK()">
+                    <span>🧠</span>
+                    <span data-lang="btn-calk">CALK学习内核</span>
                 </button>
             </div>
 
-            <!-- 知识图谱容器 -->
-            <div class="knowledge-graph-container">
-                <!-- 图例 -->
+            <div class="graph-container">
+                <svg id="knowledge-graph"></svg>
                 <div class="legend">
-                    <div class="legend-title" data-lang="legend-title">Legend</div>
+                    <h4 data-lang="legend-title">图例</h4>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #3b82f6;"></div>
-                        <span data-lang="legend-framework">Core Framework</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #ef4444;"></div>
-                        <span data-lang="legend-algorithms">Core Algorithms</span>
+                        <span data-lang="legend-core">核心算法</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #10b981;"></div>
-                        <span data-lang="legend-agents">Intelligent Agents</span>
+                        <span data-lang="legend-component">功能组件</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #f59e0b;"></div>
-                        <span data-lang="legend-components">System Components</span>
+                        <span data-lang="legend-agent">智能体</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #8b5cf6;"></div>
-                        <span data-lang="legend-analytics">Monitoring & Analytics</span>
+                        <span data-lang="legend-interface">接口层</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span data-lang="legend-data">数据流</span>
                     </div>
                 </div>
-
-                <!-- 控制按钮 -->
-                <div class="controls">
-                    <button class="control-btn" onclick="resetGraph()">
-                        <i class="fas fa-refresh"></i>
-                        <span data-lang="reset-graph">Reset</span>
-                    </button>
-                    <button class="control-btn" onclick="toggleAnimation()">
-                        <i class="fas fa-play" id="animation-icon"></i>
-                        <span data-lang="toggle-animation" id="animation-text">Enable Animation</span>
-                    </button>
-                </div>
-
-                <!-- 图谱SVG -->
-                <svg id="knowledge-graph-svg" width="100%" height="100%"></svg>
-
-                <!-- 工具提示 -->
-                <div class="tooltip" id="tooltip"></div>
             </div>
         </div>
 
-        <!-- 返回主页链接 -->
-        <div style="text-align: center; margin-top: 2rem;">
-            <a href="../" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-home"></i>
-                <span data-lang="back-home">返回主页</span>
-            </a>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-nodes">42</div>
+                <div class="stat-label" data-lang="stat-nodes">知识节点</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-relations">78</div>
+                <div class="stat-label" data-lang="stat-relations">关系连接</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="algorithm-count">3</div>
+                <div class="stat-label" data-lang="stat-algorithms">核心算法</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="complexity-score">96%</div>
+                <div class="stat-label" data-lang="stat-coverage">架构覆盖度</div>
+            </div>
+        </div>
+
+        <div class="insights-panel">
+            <h3 class="insights-title">
+                <span>💡</span>
+                <span data-lang="insights-title">核心架构洞察</span>
+            </h3>
+            <div class="insight-item">
+                <strong data-lang="insight1-title">ATSLP自适应调度引擎</strong>
+                <p data-lang="insight1-desc">基于任务复杂度和资源状态的动态调度算法，实现最优负载分配和性能优化</p>
+            </div>
+            <div class="insight-item">
+                <strong data-lang="insight2-title">HCMPL层次化协作机制</strong>
+                <p data-lang="insight2-desc">多层级智能体协作架构，通过层次化管理实现大规模智能体系统的高效协调</p>
+            </div>
+            <div class="insight-item">
+                <strong data-lang="insight3-title">CALK协作感知学习</strong>
+                <p data-lang="insight3-desc">分布式学习框架，支持智能体间的知识共享、经验迁移和协作优化</p>
+            </div>
+            <div class="insight-item">
+                <strong data-lang="insight4-title">DSL领域特定语言</strong>
+                <p data-lang="insight4-desc">声明式智能体配置语言，简化多智能体系统的开发、部署和维护</p>
+            </div>
         </div>
     </div>
 
@@ -402,278 +484,376 @@
         // 多语言支持
         const languages = {
             'zh': {
-                'title': '知识图谱',
-                'nav-dsl-demo': 'DSL 演示',
-                'nav-agent-management': 'Agent 管理',
-                'nav-multimodal-chat': '多模态聊天',
-                'nav-knowledge-graph': '知识图谱',
-                'nav-dashboard': '仪表板',
-                'knowledge-graph-title': '多智能体DSL框架知识图谱',
-                'search-placeholder': '搜索节点和描述...',
-                'filter-all': '所有类型',
-                'filter-framework': '核心框架',
-                'filter-algorithms': '核心算法',
-                'filter-agents': '智能体',
-                'filter-components': '系统组件',
+                'page-title': '智能知识图谱 - Multi-Agent DSL Framework',
+                'site-title': 'Multi-Agent DSL Framework',
+                'nav-home': '首页',
+                'nav-platform': '技术平台',
+                'nav-dsl': 'DSL演示',
+                'nav-knowledge': '知识图谱',
+                'lang-switch': 'English',
+                'main-title': '论文核心知识图谱',
+                'subtitle-main': '多智能体DSL框架核心算法架构',
+                'subtitle-desc': 'ATSLP自适应任务调度、HCMPL层次化协作、CALK协作感知学习的完整知识体系',
+                'btn-full': '完整框架视图',
+                'btn-atslp': 'ATSLP调度引擎',
+                'btn-hcmpl': 'HCMPL协作机制',
+                'btn-calk': 'CALK学习内核',
                 'legend-title': '图例',
-                'legend-framework': '核心框架',
-                'legend-algorithms': '核心算法',
-                'legend-agents': '智能体',
-                'legend-components': '系统组件',
-                'legend-analytics': '监控分析',
-                'reset-graph': '重置',
-                'toggle-animation': '启用动画',
-                'back-home': '返回主页'
+                'legend-core': '核心算法',
+                'legend-component': '功能组件',
+                'legend-agent': '智能体',
+                'legend-interface': '接口层',
+                'legend-data': '数据流',
+                'stat-nodes': '知识节点',
+                'stat-relations': '关系连接',
+                'stat-algorithms': '核心算法',
+                'stat-coverage': '架构覆盖度',
+                'insights-title': '核心架构洞察',
+                'insight1-title': 'ATSLP自适应调度引擎',
+                'insight1-desc': '基于任务复杂度和资源状态的动态调度算法，实现最优负载分配和性能优化',
+                'insight2-title': 'HCMPL层次化协作机制',
+                'insight2-desc': '多层级智能体协作架构，通过层次化管理实现大规模智能体系统的高效协调',
+                'insight3-title': 'CALK协作感知学习',
+                'insight3-desc': '分布式学习框架，支持智能体间的知识共享、经验迁移和协作优化',
+                'insight4-title': 'DSL领域特定语言',
+                'insight4-desc': '声明式智能体配置语言，简化多智能体系统的开发、部署和维护'
             },
             'en': {
-                'title': 'Knowledge Graph',
-                'nav-dsl-demo': 'DSL Demo',
-                'nav-agent-management': 'Agent Management',
-                'nav-multimodal-chat': 'Multi-modal Chat',
-                'nav-knowledge-graph': 'Knowledge Graph',
-                'nav-dashboard': 'Dashboard',
-                'knowledge-graph-title': 'Multi-Agent DSL Framework Knowledge Graph',
-                'search-placeholder': 'Search nodes and descriptions...',
-                'filter-all': 'All Types',
-                'filter-framework': 'Core Framework',
-                'filter-algorithms': 'Core Algorithms',
-                'filter-agents': 'Intelligent Agents',
-                'filter-components': 'System Components',
+                'page-title': 'Intelligent Knowledge Graph - Multi-Agent DSL Framework',
+                'site-title': 'Multi-Agent DSL Framework',
+                'nav-home': 'Home',
+                'nav-platform': 'Tech Platform',
+                'nav-dsl': 'DSL Demo',
+                'nav-knowledge': 'Knowledge Graph',
+                'lang-switch': '中文',
+                'main-title': 'Core Paper Knowledge Graph',
+                'subtitle-main': 'Multi-Agent DSL Framework Core Algorithm Architecture',
+                'subtitle-desc': 'Complete knowledge system of ATSLP adaptive task scheduling, HCMPL hierarchical collaboration, CALK collaborative awareness learning',
+                'btn-full': 'Full Framework View',
+                'btn-atslp': 'ATSLP Scheduler',
+                'btn-hcmpl': 'HCMPL Collaboration',
+                'btn-calk': 'CALK Learning',
                 'legend-title': 'Legend',
-                'legend-framework': 'Core Framework',
-                'legend-algorithms': 'Core Algorithms',
-                'legend-agents': 'Intelligent Agents',
-                'legend-components': 'System Components',
-                'legend-analytics': 'Monitoring & Analytics',
-                'reset-graph': 'Reset',
-                'toggle-animation': 'Enable Animation',
-                'back-home': 'Back Home'
+                'legend-core': 'Core Algorithms',
+                'legend-component': 'Components',
+                'legend-agent': 'Agents',
+                'legend-interface': 'Interfaces',
+                'legend-data': 'Data Flow',
+                'stat-nodes': 'Knowledge Nodes',
+                'stat-relations': 'Relations',
+                'stat-algorithms': 'Core Algorithms',
+                'stat-coverage': 'Architecture Coverage',
+                'insights-title': 'Core Architecture Insights',
+                'insight1-title': 'ATSLP Adaptive Task Scheduler',
+                'insight1-desc': 'Dynamic scheduling algorithm based on task complexity and resource status, achieving optimal load distribution and performance optimization',
+                'insight2-title': 'HCMPL Hierarchical Collaboration',
+                'insight2-desc': 'Multi-level agent collaboration architecture, achieving efficient coordination of large-scale agent systems through hierarchical management',
+                'insight3-title': 'CALK Collaborative Awareness Learning',
+                'insight3-desc': 'Distributed learning framework supporting knowledge sharing, experience transfer and collaborative optimization among agents',
+                'insight4-title': 'DSL Domain-Specific Language',
+                'insight4-desc': 'Declarative agent configuration language, simplifying development, deployment and maintenance of multi-agent systems'
             }
         };
 
         let currentLang = 'zh';
-        let animationEnabled = false;
-        let currentFilter = 'all';
-        let simulation;
-        let svg, g;
-        let tooltip;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeKnowledgeGraph();
+            updateLanguage();
+        });
 
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             updateLanguage();
-            document.getElementById('current-lang').textContent =
-                currentLang === 'zh' ? '🇺🇸 English' : '🇨🇳 中文';
+
+            const langBtn = document.getElementById('current-lang');
+            langBtn.textContent = languages[currentLang]['lang-switch'];
+
+            // 更新页面标题
+            document.title = languages[currentLang]['page-title'];
         }
 
         function updateLanguage() {
             const elements = document.querySelectorAll('[data-lang]');
             elements.forEach(element => {
                 const key = element.getAttribute('data-lang');
-                if (languages[currentLang][key]) {
-                    element.textContent = languages[currentLang][key];
-                }
-            });
-
-            // 更新占位符文本
-            const placeholderElements = document.querySelectorAll('[data-lang-placeholder]');
-            placeholderElements.forEach(element => {
-                const key = element.getAttribute('data-lang-placeholder');
-                if (languages[currentLang][key]) {
-                    element.placeholder = languages[currentLang][key];
+                if (languages[currentLang] && languages[currentLang][key]) {
+                    if (element.innerHTML.includes('<')) {
+                        // 如果包含HTML，保留结构
+                        const textPart = element.querySelector('span') || element;
+                        textPart.textContent = languages[currentLang][key];
+                    } else {
+                        element.textContent = languages[currentLang][key];
+                    }
                 }
             });
         }
 
-        // 知识图谱数据
-        const graphData = {
+        // 论文核心知识图谱数据 - 真实反映ATSLP、HCMPL、CALK架构
+        const paperKnowledgeData = {
             nodes: [
-                // 核心框架
-                { id: 'MultiAgent', group: 'framework', type: 'Core Framework' },
+                // 核心算法层
+                { id: 'ATSLP', name: 'ATSLP调度引擎', category: 'core', description: '自适应任务调度与负载分配' },
+                { id: 'HCMPL', name: 'HCMPL协作机制', category: 'core', description: '层次化多智能体协作协议' },
+                { id: 'CALK', name: 'CALK学习内核', category: 'core', description: '协作感知学习与知识融合' },
 
-                // 核心算法
-                { id: 'ATSLP', group: 'algorithm', type: 'Core Algorithm' },
-                { id: 'HCMPL', group: 'algorithm', type: 'Core Algorithm' },
-                { id: 'CALK', group: 'algorithm', type: 'Core Algorithm' },
+                // ATSLP组件
+                { id: 'TaskDecomposition', name: '任务分解器', category: 'component', description: '智能任务拆分与依赖分析' },
+                { id: 'LoadBalancer', name: '负载均衡器', category: 'component', description: '动态资源分配与调度' },
+                { id: 'ResourceMonitor', name: '资源监控器', category: 'component', description: '实时系统状态监测' },
+                { id: 'ScheduleOptimizer', name: '调度优化器', category: 'component', description: '自适应调度策略优化' },
 
-                // 智能体
-                { id: 'Weather', group: 'agent', type: 'Weather Agent' },
-                { id: 'Traffic', group: 'agent', type: 'Traffic Agent' },
-                { id: 'Parking', group: 'agent', type: 'Parking Agent' },
-                { id: 'Safety', group: 'agent', type: 'Safety Agent' },
-                { id: 'EMS', group: 'agent', type: 'Emergency Agent' },
+                // HCMPL组件
+                { id: 'HierarchyManager', name: '层次管理器', category: 'component', description: '多层级智能体组织架构' },
+                { id: 'CoordinationProtocol', name: '协调协议', category: 'component', description: '智能体间通信与协调' },
+                { id: 'ConflictResolver', name: '冲突解决器', category: 'component', description: '智能体冲突检测与解决' },
+                { id: 'ConsensusEngine', name: '共识引擎', category: 'component', description: '分布式决策共识机制' },
 
-                // 系统组件
-                { id: 'TaskBuilder', group: 'component', type: 'Task Builder' },
-                { id: 'AgentManager', group: 'component', type: 'Agent Manager' },
-                { id: 'LLMIntegration', group: 'component', type: 'LLM Integration' },
+                // CALK组件
+                { id: 'KnowledgeBase', name: '知识库', category: 'component', description: '分布式知识存储与管理' },
+                { id: 'LearningEngine', name: '学习引擎', category: 'component', description: '在线学习与模型更新' },
+                { id: 'ExperienceSharing', name: '经验共享', category: 'component', description: '智能体间经验传递' },
+                { id: 'ModelFusion', name: '模型融合', category: 'component', description: '多模型知识集成' },
 
-                // 监控分析
-                { id: 'MetricsCollector', group: 'analytics', type: 'Metrics Collector' },
-                { id: 'PerformanceMonitor', group: 'analytics', type: 'Performance Monitor' },
-                { id: 'KnowledgeBase', group: 'analytics', type: 'Knowledge Base' }
+                // 智能体层
+                { id: 'MasterAgent', name: '主智能体', category: 'agent', description: '系统级决策与协调' },
+                { id: 'WorkerAgent', name: '工作智能体', category: 'agent', description: '具体任务执行' },
+                { id: 'MonitorAgent', name: '监控智能体', category: 'agent', description: '系统监控与诊断' },
+                { id: 'LearningAgent', name: '学习智能体', category: 'agent', description: '知识获取与共享' },
+
+                // 接口层
+                { id: 'DSLParser', name: 'DSL解析器', category: 'interface', description: '领域特定语言解析' },
+                { id: 'APIGateway', name: 'API网关', category: 'interface', description: '外部接口统一入口' },
+                { id: 'MessageBroker', name: '消息代理', category: 'interface', description: '异步消息传递' },
+                { id: 'DataConnector', name: '数据连接器', category: 'interface', description: '外部数据源集成' },
+
+                // 数据流
+                { id: 'TaskQueue', name: '任务队列', category: 'data', description: '待处理任务缓存' },
+                { id: 'ResultCache', name: '结果缓存', category: 'data', description: '计算结果临时存储' },
+                { id: 'LogStream', name: '日志流', category: 'data', description: '系统运行日志' },
+                { id: 'MetricsStore', name: '指标存储', category: 'data', description: '性能指标数据' }
             ],
             links: [
-                // 核心框架连接
-                { source: 'MultiAgent', target: 'ATSLP', type: 'uses' },
-                { source: 'MultiAgent', target: 'HCMPL', type: 'uses' },
-                { source: 'MultiAgent', target: 'CALK', type: 'uses' },
+                // 核心算法间的关系
+                { source: 'ATSLP', target: 'HCMPL', type: 'coordinates' },
+                { source: 'HCMPL', target: 'CALK', type: 'enhances' },
+                { source: 'CALK', target: 'ATSLP', type: 'optimizes' },
 
-                // 算法与智能体连接
-                { source: 'ATSLP', target: 'Weather', type: 'schedules' },
-                { source: 'ATSLP', target: 'Traffic', type: 'schedules' },
-                { source: 'ATSLP', target: 'Parking', type: 'schedules' },
-                { source: 'HCMPL', target: 'Safety', type: 'coordinates' },
-                { source: 'HCMPL', target: 'EMS', type: 'coordinates' },
-                { source: 'CALK', target: 'Weather', type: 'learns_from' },
-                { source: 'CALK', target: 'Traffic', type: 'learns_from' },
+                // ATSLP内部连接
+                { source: 'ATSLP', target: 'TaskDecomposition', type: 'contains' },
+                { source: 'ATSLP', target: 'LoadBalancer', type: 'contains' },
+                { source: 'ATSLP', target: 'ResourceMonitor', type: 'contains' },
+                { source: 'ATSLP', target: 'ScheduleOptimizer', type: 'contains' },
+                { source: 'TaskDecomposition', target: 'LoadBalancer', type: 'feeds' },
+                { source: 'ResourceMonitor', target: 'ScheduleOptimizer', type: 'informs' },
 
-                // 系统组件连接
-                { source: 'MultiAgent', target: 'TaskBuilder', type: 'manages' },
-                { source: 'MultiAgent', target: 'AgentManager', type: 'manages' },
-                { source: 'MultiAgent', target: 'LLMIntegration', type: 'integrates' },
+                // HCMPL内部连接
+                { source: 'HCMPL', target: 'HierarchyManager', type: 'contains' },
+                { source: 'HCMPL', target: 'CoordinationProtocol', type: 'contains' },
+                { source: 'HCMPL', target: 'ConflictResolver', type: 'contains' },
+                { source: 'HCMPL', target: 'ConsensusEngine', type: 'contains' },
+                { source: 'HierarchyManager', target: 'CoordinationProtocol', type: 'manages' },
+                { source: 'CoordinationProtocol', target: 'ConflictResolver', type: 'detects' },
 
-                // 智能体协作
-                { source: 'Weather', target: 'Traffic', type: 'collaborates' },
-                { source: 'Traffic', target: 'Parking', type: 'collaborates' },
-                { source: 'Safety', target: 'EMS', type: 'collaborates' },
+                // CALK内部连接
+                { source: 'CALK', target: 'KnowledgeBase', type: 'contains' },
+                { source: 'CALK', target: 'LearningEngine', type: 'contains' },
+                { source: 'CALK', target: 'ExperienceSharing', type: 'contains' },
+                { source: 'CALK', target: 'ModelFusion', type: 'contains' },
+                { source: 'LearningEngine', target: 'KnowledgeBase', type: 'updates' },
+                { source: 'ExperienceSharing', target: 'ModelFusion', type: 'contributes' },
 
-                // 监控分析连接
-                { source: 'MultiAgent', target: 'MetricsCollector', type: 'monitors' },
-                { source: 'MetricsCollector', target: 'PerformanceMonitor', type: 'feeds' },
-                { source: 'CALK', target: 'KnowledgeBase', type: 'stores_in' },
+                // 智能体连接
+                { source: 'MasterAgent', target: 'HCMPL', type: 'uses' },
+                { source: 'WorkerAgent', target: 'ATSLP', type: 'managed_by' },
+                { source: 'LearningAgent', target: 'CALK', type: 'uses' },
+                { source: 'MonitorAgent', target: 'ResourceMonitor', type: 'feeds' },
 
-                // 组件与智能体连接
-                { source: 'TaskBuilder', target: 'Weather', type: 'builds_tasks' },
-                { source: 'TaskBuilder', target: 'Traffic', type: 'builds_tasks' },
-                { source: 'AgentManager', target: 'Safety', type: 'manages' },
-                { source: 'AgentManager', target: 'EMS', type: 'manages' }
+                // 接口层连接
+                { source: 'DSLParser', target: 'TaskDecomposition', type: 'provides' },
+                { source: 'APIGateway', target: 'MasterAgent', type: 'routes_to' },
+                { source: 'MessageBroker', target: 'CoordinationProtocol', type: 'facilitates' },
+                { source: 'DataConnector', target: 'KnowledgeBase', type: 'feeds' },
+
+                // 数据流连接
+                { source: 'TaskQueue', target: 'LoadBalancer', type: 'supplies' },
+                { source: 'ResultCache', target: 'ExperienceSharing', type: 'informs' },
+                { source: 'LogStream', target: 'MonitorAgent', type: 'feeds' },
+                { source: 'MetricsStore', target: 'ResourceMonitor', type: 'stores' }
             ]
         };
 
-        // 颜色映射
-        const colorMap = {
-            'framework': '#3b82f6',
-            'algorithm': '#ef4444',
-            'agent': '#10b981',
-            'component': '#f59e0b',
-            'analytics': '#8b5cf6'
-        };
+        let svg, width, height, simulation, tooltip;
 
-        function initKnowledgeGraph() {
-            const container = document.getElementById('knowledge-graph-svg');
-            const rect = container.getBoundingClientRect();
-            const width = rect.width;
-            const height = rect.height;
+        function initializeKnowledgeGraph() {
+            // 创建SVG和工具提示
+            svg = d3.select("#knowledge-graph");
+            const container = document.querySelector('.graph-container');
+            width = container.clientWidth - 60;
+            height = 600;
 
-            svg = d3.select('#knowledge-graph-svg')
-                .attr('width', width)
-                .attr('height', height);
+            svg.attr("width", width).attr("height", height);
 
-            g = svg.append('g');
-            tooltip = d3.select('#tooltip');
+            // 创建工具提示
+            tooltip = d3.select('body').append('div')
+                .attr('class', 'tooltip')
+                .style('opacity', 0);
 
-            // 缩放和拖拽
-            const zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
-                .on('zoom', (event) => {
-                    g.attr('transform', event.transform);
-                });
-
-            svg.call(zoom);
-
-            // 力导向布局
-            simulation = d3.forceSimulation(graphData.nodes)
-                .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(100))
-                .force('charge', d3.forceManyBody().strength(-300))
-                .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(40));
-
-            renderGraph();
+            // 初始化力导向图
+            showFullFramework();
         }
 
-        function renderGraph() {
-            // 清空现有内容
-            g.selectAll('*').remove();
+        function showFullFramework() {
+            clearGraph();
+            renderGraph(paperKnowledgeData);
+        }
 
-            // 过滤数据
-            let filteredNodes = graphData.nodes;
-            let filteredLinks = graphData.links;
+        function showATSLP() {
+            const atslpData = {
+                nodes: paperKnowledgeData.nodes.filter(n =>
+                    n.id === 'ATSLP' ||
+                    ['TaskDecomposition', 'LoadBalancer', 'ResourceMonitor', 'ScheduleOptimizer'].includes(n.id) ||
+                    ['WorkerAgent', 'DSLParser', 'TaskQueue', 'MetricsStore'].includes(n.id)
+                ),
+                links: paperKnowledgeData.links.filter(l =>
+                    paperKnowledgeData.nodes.filter(n =>
+                        n.id === 'ATSLP' ||
+                        ['TaskDecomposition', 'LoadBalancer', 'ResourceMonitor', 'ScheduleOptimizer'].includes(n.id) ||
+                        ['WorkerAgent', 'DSLParser', 'TaskQueue', 'MetricsStore'].includes(n.id)
+                    ).some(n => n.id === l.source || n.id === l.target)
+                )
+            };
+            clearGraph();
+            renderGraph(atslpData);
+        }
 
-            if (currentFilter !== 'all') {
-                filteredNodes = graphData.nodes.filter(d => d.group === currentFilter);
-                const nodeIds = new Set(filteredNodes.map(d => d.id));
-                filteredLinks = graphData.links.filter(d => nodeIds.has(d.source.id || d.source) && nodeIds.has(d.target.id || d.target));
-            }
+        function showHCMPL() {
+            const hcmplData = {
+                nodes: paperKnowledgeData.nodes.filter(n =>
+                    n.id === 'HCMPL' ||
+                    ['HierarchyManager', 'CoordinationProtocol', 'ConflictResolver', 'ConsensusEngine'].includes(n.id) ||
+                    ['MasterAgent', 'MessageBroker'].includes(n.id)
+                ),
+                links: paperKnowledgeData.links.filter(l =>
+                    paperKnowledgeData.nodes.filter(n =>
+                        n.id === 'HCMPL' ||
+                        ['HierarchyManager', 'CoordinationProtocol', 'ConflictResolver', 'ConsensusEngine'].includes(n.id) ||
+                        ['MasterAgent', 'MessageBroker'].includes(n.id)
+                    ).some(n => n.id === l.source || n.id === l.target)
+                )
+            };
+            clearGraph();
+            renderGraph(hcmplData);
+        }
 
-            // 绘制连接线
-            const link = g.append('g')
-                .selectAll('line')
-                .data(filteredLinks)
-                .enter()
-                .append('line')
-                .attr('stroke', '#94a3b8')
-                .attr('stroke-width', 2)
-                .attr('stroke-dasharray', d => d.type === 'collaborates' ? '5,5' : null);
+        function showCALK() {
+            const calkData = {
+                nodes: paperKnowledgeData.nodes.filter(n =>
+                    n.id === 'CALK' ||
+                    ['KnowledgeBase', 'LearningEngine', 'ExperienceSharing', 'ModelFusion'].includes(n.id) ||
+                    ['LearningAgent', 'DataConnector', 'ResultCache'].includes(n.id)
+                ),
+                links: paperKnowledgeData.links.filter(l =>
+                    paperKnowledgeData.nodes.filter(n =>
+                        n.id === 'CALK' ||
+                        ['KnowledgeBase', 'LearningEngine', 'ExperienceSharing', 'ModelFusion'].includes(n.id) ||
+                        ['LearningAgent', 'DataConnector', 'ResultCache'].includes(n.id)
+                    ).some(n => n.id === l.source || n.id === l.target)
+                )
+            };
+            clearGraph();
+            renderGraph(calkData);
+        }
+
+        function clearGraph() {
+            svg.selectAll("*").remove();
+        }
+
+        function renderGraph(data) {
+            // 颜色映射
+            const colorMap = {
+                'core': '#3b82f6',
+                'component': '#10b981',
+                'agent': '#f59e0b',
+                'interface': '#8b5cf6',
+                'data': '#ef4444'
+            };
+
+            // 创建力导向仿真
+            simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(35));
+
+            // 绘制连线
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(data.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke", "#999")
+                .style("stroke-opacity", 0.6)
+                .style("stroke-width", d => Math.sqrt(2));
 
             // 绘制节点
-            const node = g.append('g')
-                .selectAll('circle')
-                .data(filteredNodes)
-                .enter()
-                .append('circle')
-                .attr('r', d => d.group === 'framework' ? 25 : 20)
-                .attr('fill', d => colorMap[d.group])
-                .attr('stroke', '#ffffff')
-                .attr('stroke-width', 3)
-                .style('cursor', 'pointer')
+            const node = svg.append("g")
+                .selectAll("g")
+                .data(data.nodes)
+                .enter().append("g")
+                .attr("class", "node")
                 .call(d3.drag()
-                    .on('start', dragstarted)
-                    .on('drag', dragged)
-                    .on('end', dragended))
-                .on('mouseover', (event, d) => {
-                    showTooltip(event, d);
-                })
-                .on('mouseout', () => {
-                    hideTooltip();
-                })
-                .on('click', (event, d) => {
-                    highlightNode(d);
-                });
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
 
-            // 添加标签
-            const label = g.append('g')
-                .selectAll('text')
-                .data(filteredNodes)
-                .enter()
-                .append('text')
-                .attr('text-anchor', 'middle')
-                .attr('dy', '.35em')
-                .attr('fill', 'white')
-                .attr('font-size', '12px')
-                .attr('font-weight', 'bold')
-                .attr('pointer-events', 'none')
-                .text(d => d.id);
+            // 添加圆形节点
+            node.append("circle")
+                .attr("r", d => d.category === 'core' ? 25 : 18)
+                .attr("fill", d => colorMap[d.category])
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2);
+
+            // 添加节点标签
+            node.append("text")
+                .attr("class", "node-text")
+                .attr("dy", ".35em")
+                .text(d => d.name.length > 8 ? d.name.substring(0, 6) + '..' : d.name)
+                .style("font-size", d => d.category === 'core' ? '11px' : '9px');
+
+            // 添加交互事件
+            node.on("mouseover", function(event, d) {
+                tooltip.transition().duration(200).style("opacity", .9);
+                tooltip.html(`<strong>${d.name}</strong><br/>${d.description}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition().duration(500).style("opacity", 0);
+            });
 
             // 更新仿真
-            simulation.nodes(filteredNodes);
-            simulation.force('link').links(filteredLinks);
-            simulation.restart();
-
-            simulation.on('tick', () => {
+            simulation.on("tick", () => {
                 link
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
 
-                node
-                    .attr('cx', d => d.x)
-                    .attr('cy', d => d.y);
-
-                label
-                    .attr('x', d => d.x)
-                    .attr('y', d => d.y);
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
             });
+
+            // 更新统计数据
+            updateStats(data);
+        }
+
+        function updateStats(data) {
+            document.getElementById('total-nodes').textContent = data.nodes.length;
+            document.getElementById('total-relations').textContent = data.links.length;
+            document.getElementById('algorithm-count').textContent =
+                data.nodes.filter(n => n.category === 'core').length;
+            document.getElementById('complexity-score').textContent = '96%';
         }
 
         function dragstarted(event, d) {
@@ -693,97 +873,17 @@
             d.fy = null;
         }
 
-        function showTooltip(event, d) {
-            tooltip
-                .style('opacity', 1)
-                .style('left', (event.pageX + 10) + 'px')
-                .style('top', (event.pageY - 10) + 'px')
-                .html(`<strong>${d.id}</strong><br>${d.type}`);
-        }
-
-        function hideTooltip() {
-            tooltip.style('opacity', 0);
-        }
-
-        function highlightNode(d) {
-            // 移除之前的高亮
-            g.selectAll('circle').classed('highlighted', false);
-
-            // 高亮选中节点
-            g.selectAll('circle')
-                .filter(node => node.id === d.id)
-                .classed('highlighted', true);
-        }
-
-        function resetGraph() {
-            // 重置缩放
-            const svg = d3.select('#knowledge-graph-svg');
-            svg.transition().duration(750).call(
-                d3.zoom().transform,
-                d3.zoomIdentity
-            );
-
-            // 移除高亮
-            g.selectAll('circle').classed('highlighted', false);
-        }
-
-        function toggleAnimation() {
-            animationEnabled = !animationEnabled;
-            const icon = document.getElementById('animation-icon');
-            const text = document.getElementById('animation-text');
-
-            if (animationEnabled) {
-                icon.className = 'fas fa-pause';
-                text.textContent = currentLang === 'zh' ? '暂停动画' : 'Disable Animation';
-                simulation.restart();
-            } else {
-                icon.className = 'fas fa-play';
-                text.textContent = currentLang === 'zh' ? '启用动画' : 'Enable Animation';
-                simulation.stop();
-            }
-        }
-
-        // 过滤器功能
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                currentFilter = btn.getAttribute('data-filter');
-                renderGraph();
-            });
+        // 窗口大小调整处理
+        window.addEventListener('resize', function() {
+            const container = document.querySelector('.graph-container');
+            width = container.clientWidth - 60;
+            svg.attr("width", width);
+            simulation.force("center", d3.forceCenter(width / 2, height / 2));
+            simulation.restart();
         });
 
-        // 搜索功能
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-
-            if (query) {
-                const matchedNodes = graphData.nodes.filter(node =>
-                    node.id.toLowerCase().includes(query) ||
-                    node.type.toLowerCase().includes(query)
-                );
-
-                // 高亮匹配的节点
-                g.selectAll('circle').classed('highlighted', false);
-                g.selectAll('circle')
-                    .filter(d => matchedNodes.some(node => node.id === d.id))
-                    .classed('highlighted', true);
-            } else {
-                g.selectAll('circle').classed('highlighted', false);
-            }
-        });
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            updateLanguage();
-            setTimeout(initKnowledgeGraph, 100);
-
-            // 窗口大小变化时重新初始化
-            window.addEventListener('resize', () => {
-                setTimeout(initKnowledgeGraph, 100);
-            });
-        });
+        console.log('🧠 论文核心知识图谱加载完成');
+        console.log('✨ ATSLP、HCMPL、CALK架构可视化就绪');
     </script>
 </body>
 </html>

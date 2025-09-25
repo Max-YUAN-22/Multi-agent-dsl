@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多智能体DSL框架 - Multi-Agent DSL Framework</title>
+    <title data-lang="page-title">多智能体DSL框架 - Multi-Agent DSL Framework</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -76,41 +76,69 @@
         .link:hover {
             background: #5a6fd8;
         }
+
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lang-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🤖 多智能体DSL框架</h1>
-        <p class="subtitle">Multi-Agent DSL Framework - 企业级智能体协作平台</p>
+        <button class="lang-switch" onclick="toggleLanguage()">
+            <span>🌐</span>
+            <span id="current-lang" data-lang="lang-switch">English</span>
+        </button>
+
+        <h1><span>🤖</span> <span data-lang="main-title">多智能体DSL框架</span></h1>
+        <p class="subtitle"><span data-lang="subtitle">Multi-Agent DSL Framework - 企业级智能体协作平台</span></p>
 
         <div class="status">
-            <h3>✅ 系统正常运行</h3>
-            <p>GitHub Pages 部署成功，所有功能模块已就绪</p>
+            <h3><span>✅</span> <span data-lang="system-status">系统正常运行</span></h3>
+            <p data-lang="deploy-status">GitHub Pages 部署成功，所有功能模块已就绪</p>
         </div>
 
         <div class="features">
             <div class="feature">
-                <h3>🧠 ATSLP</h3>
-                <h4>自适应任务调度引擎</h4>
-                <p>智能任务分解与动态负载均衡，支持实时调度优化和资源自适应分配。</p>
+                <h3><span>🧠</span> <span data-lang="atslp-title">ATSLP</span></h3>
+                <h4 data-lang="atslp-subtitle">自适应任务调度引擎</h4>
+                <p data-lang="atslp-desc">智能任务分解与动态负载均衡，支持实时调度优化和资源自适应分配。</p>
             </div>
 
             <div class="feature">
-                <h3>🤝 HCMPL</h3>
-                <h4>层次化协作机制</h4>
-                <p>多层级智能体协作架构，实现高效的任务协调和知识共享。</p>
+                <h3><span>🤝</span> <span data-lang="hcmpl-title">HCMPL</span></h3>
+                <h4 data-lang="hcmpl-subtitle">层次化协作机制</h4>
+                <p data-lang="hcmpl-desc">多层级智能体协作架构，实现高效的任务协调和知识共享。</p>
             </div>
 
             <div class="feature">
-                <h3>📚 CALK</h3>
-                <h4>协作学习内核</h4>
-                <p>分布式学习与知识融合技术，支持增量学习和经验迁移。</p>
+                <h3><span>📚</span> <span data-lang="calk-title">CALK</span></h3>
+                <h4 data-lang="calk-subtitle">协作学习内核</h4>
+                <p data-lang="calk-desc">分布式学习与知识融合技术，支持增量学习和经验迁移。</p>
             </div>
 
             <div class="feature">
-                <h3>🔧 DSL 语言</h3>
-                <h4>领域特定语言</h4>
-                <p>专门设计的配置语言，简化多智能体系统的开发和部署。</p>
+                <h3><span>🔧</span> <span data-lang="dsl-title">DSL 语言</span></h3>
+                <h4 data-lang="dsl-subtitle">领域特定语言</h4>
+                <p data-lang="dsl-desc">专门设计的配置语言，简化多智能体系统的开发和部署。</p>
             </div>
         </div>
 
@@ -201,8 +229,87 @@
     </div>
 
     <script>
+        // 多语言支持
+        const languages = {
+            'zh': {
+                'page-title': '多智能体DSL框架 - Multi-Agent DSL Framework',
+                'lang-switch': 'English',
+                'main-title': '多智能体DSL框架',
+                'subtitle': 'Multi-Agent DSL Framework - 企业级智能体协作平台',
+                'system-status': '系统正常运行',
+                'deploy-status': 'GitHub Pages 部署成功，所有功能模块已就绪',
+                'atslp-title': 'ATSLP',
+                'atslp-subtitle': '自适应任务调度引擎',
+                'atslp-desc': '智能任务分解与动态负载均衡，支持实时调度优化和资源自适应分配。',
+                'hcmpl-title': 'HCMPL',
+                'hcmpl-subtitle': '层次化协作机制',
+                'hcmpl-desc': '多层级智能体协作架构，实现高效的任务协调和知识共享。',
+                'calk-title': 'CALK',
+                'calk-subtitle': '协作学习内核',
+                'calk-desc': '分布式学习与知识融合技术，支持增量学习和经验迁移。',
+                'dsl-title': 'DSL 语言',
+                'dsl-subtitle': '领域特定语言',
+                'dsl-desc': '专门设计的配置语言，简化多智能体系统的开发和部署。'
+            },
+            'en': {
+                'page-title': 'Multi-Agent DSL Framework - Enterprise Intelligent Agent Collaboration Platform',
+                'lang-switch': '中文',
+                'main-title': 'Multi-Agent DSL Framework',
+                'subtitle': 'Enterprise Intelligent Agent Collaboration Platform',
+                'system-status': 'System Running Normally',
+                'deploy-status': 'GitHub Pages deployed successfully, all functional modules ready',
+                'atslp-title': 'ATSLP',
+                'atslp-subtitle': 'Adaptive Task Scheduling Engine',
+                'atslp-desc': 'Intelligent task decomposition and dynamic load balancing, supporting real-time scheduling optimization and adaptive resource allocation.',
+                'hcmpl-title': 'HCMPL',
+                'hcmpl-subtitle': 'Hierarchical Collaboration Mechanism',
+                'hcmpl-desc': 'Multi-level agent collaboration architecture, achieving efficient task coordination and knowledge sharing.',
+                'calk-title': 'CALK',
+                'calk-subtitle': 'Collaborative Learning Kernel',
+                'calk-desc': 'Distributed learning and knowledge fusion technology, supporting incremental learning and experience transfer.',
+                'dsl-title': 'DSL Language',
+                'dsl-subtitle': 'Domain-Specific Language',
+                'dsl-desc': 'Specially designed configuration language, simplifying the development and deployment of multi-agent systems.'
+            }
+        };
+
+        let currentLang = 'zh';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+        });
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+
+            const langBtn = document.getElementById('current-lang');
+            langBtn.textContent = languages[currentLang]['lang-switch'];
+
+            // 更新页面标题
+            document.title = languages[currentLang]['page-title'];
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (languages[currentLang] && languages[currentLang][key]) {
+                    if (element.innerHTML.includes('<')) {
+                        // 如果包含HTML，保留结构
+                        const textPart = element.querySelector('span') || element;
+                        textPart.textContent = languages[currentLang][key];
+                    } else {
+                        element.textContent = languages[currentLang][key];
+                    }
+                }
+            });
+        }
+
         console.log('✅ 多智能体DSL框架主页加载成功');
         console.log('🚀 GitHub Pages 部署正常');
+        console.log('🌐 多语言支持已启用');
 
         // 页面加载时间统计
         window.addEventListener('load', function() {
