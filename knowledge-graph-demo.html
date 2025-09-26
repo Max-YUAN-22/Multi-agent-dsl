@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识图谱修复验证</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .graph-container {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 1rem;
+            margin: 2rem 0;
+            position: relative;
+            min-height: 700px;
+            overflow: hidden;
+            border: 2px solid #374151;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .controls {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border: none;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 知识图谱修复验证</h1>
+
+        <div class="status success">
+            <h3>✅ 修复完成</h3>
+            <p>知识图谱显示问题已修复，现在节点会正确分散在页面中央</p>
+        </div>
+
+        <div class="status info">
+            <h3>🎯 修复内容</h3>
+            <ul>
+                <li>✅ 解决节点线性排列在左侧的问题</li>
+                <li>✅ 实现力导向图正确布局</li>
+                <li>✅ 添加缩放功能 (0.3x - 3x)</li>
+                <li>✅ 节点拖拽和交互</li>
+                <li>✅ 重置视图按钮</li>
+                <li>✅ 悬停高亮效果</li>
+            </ul>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="loadFullGraph()">完整框架</button>
+            <button class="btn" onclick="loadATSLP()">ATSLP算法</button>
+            <button class="btn" onclick="loadHCMPL()">HCMPL算法</button>
+            <button class="btn" onclick="loadCALK()">CALK算法</button>
+        </div>
+
+        <div class="graph-container">
+            <div id="loading" style="color: white; text-align: center;">
+                <h3>🔄 正在加载知识图谱...</h3>
+                <p>请稍候，图谱将在页面中央展开</p>
+            </div>
+        </div>
+
+        <div class="status info">
+            <h3>🎮 使用指南</h3>
+            <ul>
+                <li><strong>缩放</strong>：鼠标滚轮缩放</li>
+                <li><strong>拖拽</strong>：拖动画布移动视图</li>
+                <li><strong>节点拖拽</strong>：拖动节点改变位置</li>
+                <li><strong>悬停</strong>：鼠标悬停查看详情</li>
+                <li><strong>重置</strong>：点击重置视图按钮</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let svg, width, height, simulation, tooltip;
+
+        // 测试数据
+        const testData = {
+            nodes: [
+                {id: 'ATSLP', name: 'ATSLP', category: 'core', description: '自适应任务调度算法'},
+                {id: 'HCMPL', name: 'HCMPL', category: 'core', description: '层次缓存管理算法'},
+                {id: 'CALK', name: 'CALK', category: 'core', description: '协作学习算法'},
+                {id: 'TaskDecomposition', name: '任务分解', category: 'component', description: '将复杂任务分解为子任务'},
+                {id: 'LoadBalancer', name: '负载均衡', category: 'component', description: '动态分配计算资源'},
+                {id: 'CacheManager', name: '缓存管理', category: 'component', description: '智能缓存策略'},
+                {id: 'WorkerAgent', name: '工作智能体', category: 'agent', description: '执行具体任务的智能体'},
+                {id: 'CoordinatorAgent', name: '协调智能体', category: 'agent', description: '协调多个智能体'},
+                {id: 'DSLParser', name: 'DSL解析器', category: 'interface', description: '解析领域特定语言'},
+                {id: 'APIGateway', name: 'API网关', category: 'interface', description: '统一接口管理'},
+                {id: 'MetricsStore', name: '指标存储', category: 'data', description: '存储性能指标'},
+                {id: 'TaskQueue', name: '任务队列', category: 'data', description: '任务排队管理'}
+            ],
+            links: [
+                {source: 'ATSLP', target: 'TaskDecomposition'},
+                {source: 'ATSLP', target: 'LoadBalancer'},
+                {source: 'HCMPL', target: 'CacheManager'},
+                {source: 'CALK', target: 'WorkerAgent'},
+                {source: 'CALK', target: 'CoordinatorAgent'},
+                {source: 'TaskDecomposition', target: 'WorkerAgent'},
+                {source: 'LoadBalancer', target: 'CoordinatorAgent'},
+                {source: 'WorkerAgent', target: 'DSLParser'},
+                {source: 'CoordinatorAgent', target: 'APIGateway'},
+                {source: 'CacheManager', target: 'MetricsStore'},
+                {source: 'DSLParser', target: 'TaskQueue'},
+                {source: 'APIGateway', target: 'MetricsStore'}
+            ]
+        };
+
+        function initializeGraph() {
+            const container = document.querySelector('.graph-container');
+            width = container.clientWidth - 40;
+            height = 700;
+
+            // 移除loading
+            document.getElementById('loading').style.display = 'none';
+
+            // 清除现有内容
+            d3.select('#knowledge-graph').remove();
+
+            // 创建SVG
+            svg = d3.select('.graph-container')
+                .append('svg')
+                .attr('id', 'knowledge-graph')
+                .attr('width', width)
+                .attr('height', height)
+                .style('background', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)')
+                .style('border-radius', '12px');
+
+            // 添加缩放
+            const zoom = d3.zoom()
+                .scaleExtent([0.3, 3])
+                .on('zoom', function(event) {
+                    svg.select('.graph-container-g').attr('transform', event.transform);
+                });
+
+            svg.call(zoom);
+            svg.append('g').attr('class', 'graph-container-g');
+
+            // 创建tooltip
+            tooltip = d3.select('body').append('div')
+                .attr('class', 'tooltip')
+                .style('opacity', 0)
+                .style('position', 'absolute')
+                .style('background', 'rgba(0,0,0,0.8)')
+                .style('color', 'white')
+                .style('padding', '8px 12px')
+                .style('border-radius', '6px')
+                .style('font-size', '12px')
+                .style('pointer-events', 'none')
+                .style('z-index', '1000');
+
+            renderGraph(testData);
+        }
+
+        function renderGraph(data) {
+            const nodes = data.nodes.map(d => ({...d}));
+            const links = data.links.map(d => ({...d}));
+
+            // 设置初始位置
+            nodes.forEach((d, i) => {
+                const angle = (i / nodes.length) * 2 * Math.PI;
+                const radius = Math.min(width, height) * 0.15;
+                d.x = width / 2 + radius * Math.cos(angle) + (Math.random() - 0.5) * 100;
+                d.y = height / 2 + radius * Math.sin(angle) + (Math.random() - 0.5) * 100;
+            });
+
+            const colorMap = {
+                'core': '#ffffff',
+                'component': '#a7f3d0',
+                'agent': '#fcd34d',
+                'interface': '#c4b5fd',
+                'data': '#fca5a5'
+            };
+
+            // 力模拟
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.8))
+                .force("charge", d3.forceManyBody().strength(-600))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(30))
+                .alpha(1)
+                .alphaDecay(0.02);
+
+            const g = svg.select('.graph-container-g');
+            g.selectAll("*").remove();
+
+            // 连接线
+            const link = g.append("g")
+                .selectAll("line")
+                .data(links)
+                .enter().append("line")
+                .style("stroke", "#ffffff")
+                .style("stroke-opacity", 0.6)
+                .style("stroke-width", 2);
+
+            // 节点
+            const node = g.append("g")
+                .selectAll("g")
+                .data(nodes)
+                .enter().append("g")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            node.append("circle")
+                .attr("r", d => d.category === 'core' ? 25 : 18)
+                .attr("fill", d => colorMap[d.category])
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2)
+                .style("cursor", "pointer");
+
+            node.append("text")
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .text(d => d.name.length > 6 ? d.name.substring(0, 4) + '..' : d.name)
+                .style("font-size", "10px")
+                .style("font-weight", "600")
+                .style("fill", "#333")
+                .style("pointer-events", "none");
+
+            // 悬停效果
+            node.on("mouseover", function(event, d) {
+                tooltip.transition().duration(200).style("opacity", .9);
+                tooltip.html(`<strong>${d.name}</strong><br/>${d.description}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function() {
+                tooltip.transition().duration(500).style("opacity", 0);
+            });
+
+            // 动画更新
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+
+            // 重置按钮
+            const resetButton = svg.append("g")
+                .attr("transform", "translate(20, 20)")
+                .style("cursor", "pointer")
+                .on("click", function() {
+                    svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+                });
+
+            resetButton.append("rect")
+                .attr("width", 80)
+                .attr("height", 30)
+                .attr("rx", 15)
+                .attr("fill", "rgba(255,255,255,0.9)");
+
+            resetButton.append("text")
+                .attr("x", 40)
+                .attr("y", 20)
+                .attr("text-anchor", "middle")
+                .style("font-size", "11px")
+                .style("font-weight", "600")
+                .text("重置视图");
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // 按钮功能
+        function loadFullGraph() { renderGraph(testData); }
+        function loadATSLP() {
+            const atslpData = {
+                nodes: testData.nodes.filter(n => ['ATSLP', 'TaskDecomposition', 'LoadBalancer', 'WorkerAgent'].includes(n.id)),
+                links: testData.links.filter(l => ['ATSLP', 'TaskDecomposition', 'LoadBalancer', 'WorkerAgent'].includes(l.source) ||
+                                                   ['ATSLP', 'TaskDecomposition', 'LoadBalancer', 'WorkerAgent'].includes(l.target))
+            };
+            renderGraph(atslpData);
+        }
+        function loadHCMPL() {
+            const hcmplData = {
+                nodes: testData.nodes.filter(n => ['HCMPL', 'CacheManager', 'MetricsStore'].includes(n.id)),
+                links: testData.links.filter(l => ['HCMPL', 'CacheManager', 'MetricsStore'].includes(l.source) ||
+                                                   ['HCMPL', 'CacheManager', 'MetricsStore'].includes(l.target))
+            };
+            renderGraph(hcmplData);
+        }
+        function loadCALK() {
+            const calkData = {
+                nodes: testData.nodes.filter(n => ['CALK', 'WorkerAgent', 'CoordinatorAgent'].includes(n.id)),
+                links: testData.links.filter(l => ['CALK', 'WorkerAgent', 'CoordinatorAgent'].includes(l.source) ||
+                                                   ['CALK', 'WorkerAgent', 'CoordinatorAgent'].includes(l.target))
+            };
+            renderGraph(calkData);
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initializeGraph, 500);
+        });
+    </script>
+</body>
+</html>
