@@ -1468,6 +1468,11 @@ workflow SmartCityWorkflow {
             initializeKnowledgeGraph();
             updateLanguage();
             startDataUpdates();
+
+            // 延迟初始化智慧城市系统，确保所有脚本都已加载
+            setTimeout(() => {
+                initializeSmartCitySystem();
+            }, 500);
         });
 
         // 初始化导航
@@ -1751,14 +1756,7 @@ workflow SmartManufacturingWorkflow {
                 .style('background', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)')
                 .style('border-radius', '12px');
 
-            // 添加缩放功能 - 限制缩放范围使其更用户友好
-            const zoom = d3.zoom()
-                .scaleExtent([0.6, 2.0]) // 更合理的缩放范围，不会过小或过大
-                .on('zoom', function(event) {
-                    svg.select('.graph-container-g').attr('transform', event.transform);
-                });
-
-            svg.call(zoom);
+            // 不使用缩放功能，保持简洁
 
             // 添加主容器组
             svg.append('g').attr('class', 'graph-container-g');
@@ -1852,7 +1850,7 @@ workflow SmartManufacturingWorkflow {
         }
 
         function renderGraph(data) {
-            // 深拷贝数据以避免修改原始数据
+            // 深拷贝数据
             const nodes = data.nodes.map(d => ({...d}));
             const links = data.links.map(d => ({...d}));
 
@@ -1864,77 +1862,73 @@ workflow SmartManufacturingWorkflow {
                 'data': '#fca5a5'
             };
 
-            // 强制手动分布节点位置，确保不会垂直堆叠
-            const centerX = width / 2;
-            const centerY = height / 2;
-            const spreadRadius = Math.min(width, height) * 0.3;
+            // 完全静态的网格布局 - 不使用任何D3力模拟
+            const cols = Math.ceil(Math.sqrt(nodes.length));
+            const rows = Math.ceil(nodes.length / cols);
 
-            // 分层放置不同类型的节点
-            const coreNodes = nodes.filter(n => n.category === 'core');
-            const otherNodes = nodes.filter(n => n.category !== 'core');
+            // 计算网格尺寸，留出边距
+            const margin = 100;
+            const gridWidth = width - margin * 2;
+            const gridHeight = height - margin * 2;
+            const cellWidth = gridWidth / cols;
+            const cellHeight = gridHeight / rows;
 
-            // 核心节点放在内圈
-            coreNodes.forEach((d, i) => {
-                const angle = (i / coreNodes.length) * 2 * Math.PI;
-                d.x = centerX + spreadRadius * 0.3 * Math.cos(angle);
-                d.y = centerY + spreadRadius * 0.3 * Math.sin(angle);
-                d.fx = d.x; // 固定位置，防止移动
-                d.fy = d.y;
+            // 静态网格放置每个节点
+            nodes.forEach((d, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                d.x = margin + col * cellWidth + cellWidth / 2;
+                d.y = margin + row * cellHeight + cellHeight / 2;
             });
 
-            // 其他节点放在外圈，按类型分组
-            const categoryGroups = {};
-            otherNodes.forEach(n => {
-                if (!categoryGroups[n.category]) categoryGroups[n.category] = [];
-                categoryGroups[n.category].push(n);
-            });
-
-            let angleOffset = 0;
-            Object.values(categoryGroups).forEach(group => {
-                group.forEach((d, i) => {
-                    const groupAngle = angleOffset + (i / group.length) * (Math.PI / 2);
-                    const radius = spreadRadius * (0.6 + Math.random() * 0.4);
-                    d.x = centerX + radius * Math.cos(groupAngle);
-                    d.y = centerY + radius * Math.sin(groupAngle);
-                });
-                angleOffset += Math.PI / 2;
-            });
-
-            // 使用简化的力模拟，主要用于连接线的动画效果
-            simulation = d3.forceSimulation(nodes)
-                .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(0.1))
-                .force("charge", d3.forceManyBody().strength(-200))
-                .force("collision", d3.forceCollide().radius(d => d.category === 'core' ? 35 : 25))
-                .alpha(0.3)
-                .alphaDecay(0.05);
+            // 停止任何现有的模拟
+            if (simulation) {
+                simulation.stop();
+            }
+            simulation = null;
 
             const g = svg.select('.graph-container-g');
 
-            // 创建连接线
+            // 创建连接线 - 静态坐标
             const link = g.append("g")
                 .attr("class", "links")
                 .selectAll("line")
                 .data(links)
                 .enter().append("line")
+                .attr("x1", d => {
+                    const sourceNode = nodes.find(n => n.id === d.source);
+                    return sourceNode ? sourceNode.x : 0;
+                })
+                .attr("y1", d => {
+                    const sourceNode = nodes.find(n => n.id === d.source);
+                    return sourceNode ? sourceNode.y : 0;
+                })
+                .attr("x2", d => {
+                    const targetNode = nodes.find(n => n.id === d.target);
+                    return targetNode ? targetNode.x : 0;
+                })
+                .attr("y2", d => {
+                    const targetNode = nodes.find(n => n.id === d.target);
+                    return targetNode ? targetNode.y : 0;
+                })
                 .style("stroke", "#ffffff")
                 .style("stroke-opacity", 0.4)
                 .style("stroke-width", d => {
-                    const sourceCore = d.source.category === 'core';
-                    const targetCore = d.target.category === 'core';
+                    const sourceNode = nodes.find(n => n.id === d.source);
+                    const targetNode = nodes.find(n => n.id === d.target);
+                    const sourceCore = sourceNode && sourceNode.category === 'core';
+                    const targetCore = targetNode && targetNode.category === 'core';
                     return sourceCore || targetCore ? 3 : 2;
                 });
 
-            // 创建节点组
+            // 创建节点组 - 静态位置，不可拖拽
             const node = g.append("g")
                 .attr("class", "nodes")
                 .selectAll("g")
                 .data(nodes)
                 .enter().append("g")
                 .attr("class", "node")
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended));
+                .attr("transform", d => `translate(${d.x},${d.y})`);
 
             // 添加节点圆圈
             node.append("circle")
@@ -1998,52 +1992,7 @@ workflow SmartManufacturingWorkflow {
                     });
             });
 
-            // 动画更新
-            simulation.on("tick", () => {
-                // 边界约束
-                nodes.forEach(d => {
-                    const radius = d.category === 'core' ? 35 : 25;
-                    d.x = Math.max(radius, Math.min(width - radius, d.x));
-                    d.y = Math.max(radius, Math.min(height - radius, d.y));
-                });
-
-                link
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y);
-
-                node.attr("transform", d => `translate(${d.x},${d.y})`);
-            });
-
-            // 添加重置视图按钮
-            const resetButton = svg.append("g")
-                .attr("class", "reset-button")
-                .attr("transform", "translate(20, 20)")
-                .style("cursor", "pointer")
-                .on("click", function() {
-                    svg.transition().duration(750).call(
-                        d3.zoom().transform,
-                        d3.zoomIdentity
-                    );
-                });
-
-            resetButton.append("rect")
-                .attr("width", 80)
-                .attr("height", 30)
-                .attr("rx", 15)
-                .attr("fill", "rgba(255,255,255,0.9)")
-                .attr("stroke", "#6b7280")
-                .attr("stroke-width", 1);
-
-            resetButton.append("text")
-                .attr("x", 40)
-                .attr("y", 20)
-                .attr("text-anchor", "middle")
-                .style("font-size", "11px")
-                .style("font-weight", "600")
-                .style("fill", "#374151")
-                .text("重置视图");
+            // 静态布局不需要动画更新和重置按钮
 
             updateKnowledgeStats(data);
         }
@@ -2056,22 +2005,7 @@ workflow SmartManufacturingWorkflow {
             document.getElementById('complexity-score').textContent = '96%';
         }
 
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
-        }
-
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
+        // 不再需要拖拽函数，因为使用静态布局
 
         // 数据更新
         function startDataUpdates() {
@@ -2139,16 +2073,20 @@ workflow SmartManufacturingWorkflow {
         let currentSystemStatus = 'offline';
         let realTimeUpdates = true;
 
-        // 系统初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeSmartCitySystem();
-        });
+        // 系统初始化逻辑已合并到上方的DOMContentLoaded监听器中
 
         async function initializeSmartCitySystem() {
             try {
                 console.log('🚀 正在初始化智慧城市系统...');
 
-                smartCitySystem = new SmartCityAgentFramework();
+                // 检查是否有SmartCityAgentFramework类
+                if (typeof SmartCityAgentFramework !== 'undefined') {
+                    smartCitySystem = new SmartCityAgentFramework();
+                    console.log('✅ SmartCityAgentFramework 已加载');
+                } else {
+                    console.log('⚠️ SmartCityAgentFramework 未加载，使用演示模式');
+                }
+
                 currentSystemStatus = 'online';
 
                 // 监听系统更新事件
@@ -2157,7 +2095,7 @@ workflow SmartManufacturingWorkflow {
                 // 更新状态指示器
                 updateSystemStatus('online');
 
-                // 立即启动Agent状态演示
+                // 立即启动Agent状态演示 - 不依赖外部框架
                 setTimeout(() => {
                     startAgentStatusDemo();
                 }, 1000);
@@ -2172,6 +2110,10 @@ workflow SmartManufacturingWorkflow {
                 console.log('✅ 智慧城市系统初始化完成');
             } catch (error) {
                 console.error('❌ 系统初始化失败:', error);
+                // 即使初始化失败，也要启动状态演示
+                setTimeout(() => {
+                    startAgentStatusDemo();
+                }, 2000);
                 updateSystemStatus('error');
             }
         }
