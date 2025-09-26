@@ -1751,9 +1751,9 @@ workflow SmartManufacturingWorkflow {
                 .style('background', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)')
                 .style('border-radius', '12px');
 
-            // 添加缩放功能
+            // 添加缩放功能 - 限制缩放范围使其更用户友好
             const zoom = d3.zoom()
-                .scaleExtent([0.3, 3])
+                .scaleExtent([0.6, 2.0]) // 更合理的缩放范围，不会过小或过大
                 .on('zoom', function(event) {
                     svg.select('.graph-container-g').attr('transform', event.transform);
                 });
@@ -1856,14 +1856,6 @@ workflow SmartManufacturingWorkflow {
             const nodes = data.nodes.map(d => ({...d}));
             const links = data.links.map(d => ({...d}));
 
-            // 设置节点初始位置
-            nodes.forEach((d, i) => {
-                const angle = (i / nodes.length) * 2 * Math.PI;
-                const radius = Math.min(width, height) * 0.15;
-                d.x = width / 2 + radius * Math.cos(angle) + (Math.random() - 0.5) * 100;
-                d.y = height / 2 + radius * Math.sin(angle) + (Math.random() - 0.5) * 100;
-            });
-
             const colorMap = {
                 'core': '#ffffff',
                 'component': '#a7f3d0',
@@ -1872,26 +1864,49 @@ workflow SmartManufacturingWorkflow {
                 'data': '#fca5a5'
             };
 
-            // 创建力模拟
+            // 强制手动分布节点位置，确保不会垂直堆叠
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const spreadRadius = Math.min(width, height) * 0.3;
+
+            // 分层放置不同类型的节点
+            const coreNodes = nodes.filter(n => n.category === 'core');
+            const otherNodes = nodes.filter(n => n.category !== 'core');
+
+            // 核心节点放在内圈
+            coreNodes.forEach((d, i) => {
+                const angle = (i / coreNodes.length) * 2 * Math.PI;
+                d.x = centerX + spreadRadius * 0.3 * Math.cos(angle);
+                d.y = centerY + spreadRadius * 0.3 * Math.sin(angle);
+                d.fx = d.x; // 固定位置，防止移动
+                d.fy = d.y;
+            });
+
+            // 其他节点放在外圈，按类型分组
+            const categoryGroups = {};
+            otherNodes.forEach(n => {
+                if (!categoryGroups[n.category]) categoryGroups[n.category] = [];
+                categoryGroups[n.category].push(n);
+            });
+
+            let angleOffset = 0;
+            Object.values(categoryGroups).forEach(group => {
+                group.forEach((d, i) => {
+                    const groupAngle = angleOffset + (i / group.length) * (Math.PI / 2);
+                    const radius = spreadRadius * (0.6 + Math.random() * 0.4);
+                    d.x = centerX + radius * Math.cos(groupAngle);
+                    d.y = centerY + radius * Math.sin(groupAngle);
+                });
+                angleOffset += Math.PI / 2;
+            });
+
+            // 使用简化的力模拟，主要用于连接线的动画效果
             simulation = d3.forceSimulation(nodes)
-                .force("link", d3.forceLink(links).id(d => d.id).distance(d => {
-                    // 根据节点类型调整连接距离
-                    const sourceCore = d.source.category === 'core';
-                    const targetCore = d.target.category === 'core';
-                    return sourceCore || targetCore ? 150 : 100;
-                }).strength(0.8))
-                .force("charge", d3.forceManyBody().strength(d => {
-                    // 核心节点斥力更强
-                    return d.category === 'core' ? -800 : -400;
-                }))
-                .force("center", d3.forceCenter(width / 2, height / 2))
-                .force("collision", d3.forceCollide().radius(d => {
-                    return d.category === 'core' ? 35 : 25;
-                }))
-                .force("x", d3.forceX(width / 2).strength(0.05))
-                .force("y", d3.forceY(height / 2).strength(0.05))
-                .alpha(1)
-                .alphaDecay(0.01);
+                .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(0.1))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("collision", d3.forceCollide().radius(d => d.category === 'core' ? 35 : 25))
+                .alpha(0.3)
+                .alphaDecay(0.05);
 
             const g = svg.select('.graph-container-g');
 
