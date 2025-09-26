@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部署状态测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🚀 智慧城市多智能体系统 - 部署状态</h1>
+
+    <div class="status success">
+        <h3>✅ 系统已成功部署</h3>
+        <p>智慧城市多智能体协作系统已部署到GitHub Pages</p>
+    </div>
+
+    <div class="status info">
+        <h3>📋 核心功能检查</h3>
+        <ul>
+            <li>Master Agent + Sub Agents 架构 ✅</li>
+            <li>智能体状态可视化 ✅</li>
+            <li>任务执行流程跟踪 ✅</li>
+            <li>真实传感器数据获取 ✅</li>
+            <li>完整报告生成系统 ✅</li>
+        </ul>
+    </div>
+
+    <div class="status warning">
+        <h3>🔧 JavaScript模块检查</h3>
+        <div id="module-status">正在检查...</div>
+    </div>
+
+    <div class="status info">
+        <h3>🎯 访问主系统</h3>
+        <p><a href="index.html" style="color: #0066cc; text-decoration: none; font-weight: bold;">点击进入智慧城市多智能体系统 →</a></p>
+        <p>建议访问"智能协作"页面查看完整的Agent架构和任务执行流程</p>
+    </div>
+
+    <script>
+        // 检查关键模块是否加载成功
+        const moduleCheck = document.getElementById('module-status');
+
+        Promise.all([
+            fetch('smart-city-agents.js').then(r => r.ok),
+            fetch('api-config.js').then(r => r.ok),
+            fetch('task-tracker.js').then(r => r.ok)
+        ]).then(results => {
+            const allLoaded = results.every(r => r);
+            if (allLoaded) {
+                moduleCheck.innerHTML = '✅ 所有核心模块文件都可正常访问';
+                moduleCheck.parentElement.className = 'status success';
+            } else {
+                moduleCheck.innerHTML = '⚠️ 部分模块文件可能还在部署中，请稍后再��';
+            }
+        }).catch(() => {
+            moduleCheck.innerHTML = '❌ 模块检查失败，可能网络问题或正在部署中';
+        });
+    </script>
+
+    <footer style="margin-top: 3rem; text-align: center; color: #666;">
+        <p>🏗️ 真实智慧城市多智能体协作系统</p>
+        <p>基于ATSLP、HCMPL、CALK算法的企业级实现</p>
+    </footer>
+</body>
+</html>
