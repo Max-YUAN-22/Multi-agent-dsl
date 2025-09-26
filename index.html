@@ -40,6 +40,31 @@
             align-items: center;
             max-width: 1400px;
             margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .navbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .lang-toggle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .lang-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .navbar-logo {
@@ -666,6 +691,10 @@
             <div class="navbar-logo">
                 <span>🤖</span>
                 <span data-lang="site-title">Multi-Agent DSL Framework</span>
+            </div>
+
+            <div class="navbar-controls">
+                <button class="lang-toggle" onclick="toggleLanguage()" data-lang="lang-switch">English</button>
             </div>
 
             <ul class="navbar-nav">
@@ -2108,23 +2137,79 @@ workflow SmartManufacturingWorkflow {
                 currentSystemStatus = 'online';
 
                 // 监听系统更新事件
-                window.addEventListener('smartCityUpdate', handleSystemUpdate);
+                window.addEventListener('smartCityUpdate', handleSystemUpdateExtended);
 
                 // 更新状态指示器
                 updateSystemStatus('online');
+
+                // 立即启动Agent状态演示
+                setTimeout(() => {
+                    startAgentStatusDemo();
+                }, 1000);
 
                 // 启动模拟任务（展示系统能力）
                 setTimeout(() => {
                     if (currentSystemStatus === 'online') {
                         runDemoTasks();
                     }
-                }, 3000);
+                }, 8000);
 
                 console.log('✅ 智慧城市系统初始化完成');
             } catch (error) {
                 console.error('❌ 系统初始化失败:', error);
                 updateSystemStatus('error');
             }
+        }
+
+        // 新增：Agent状态演示函数
+        function startAgentStatusDemo() {
+            console.log('🎭 启动智能体状态演示...');
+
+            // 模拟智能体工作循环
+            let demoStep = 0;
+            const demoSteps = [
+                () => {
+                    updateAgentStatus('master', 'analyzing', '分析城市数据');
+                    setTimeout(() => updateAgentStatus('traffic', 'executing', '处理交通数据'), 500);
+                    setTimeout(() => updateAgentStatus('weather', 'executing', '获取天气信息'), 800);
+                },
+                () => {
+                    updateAgentStatus('parking', 'executing', '分析停车状况');
+                    setTimeout(() => updateAgentStatus('security', 'executing', '监控安全状态'), 300);
+                },
+                () => {
+                    updateAgentStatus('traffic', 'completed', '交通分析完成');
+                    updateAgentStatus('weather', 'completed', '天气分析完成');
+                    setTimeout(() => updateAgentStatus('master', 'coordinating', '协调各子系统'), 500);
+                },
+                () => {
+                    updateAgentStatus('parking', 'completed', '停车分析完成');
+                    updateAgentStatus('security', 'completed', '安全评估完成');
+                    setTimeout(() => updateAgentStatus('master', 'synthesizing', '综合分析中'), 500);
+                },
+                () => {
+                    updateAgentStatus('master', 'completed', '任务完成');
+                    setTimeout(() => {
+                        clearAgentStatuses();
+                        // 重新开始循环
+                        setTimeout(() => startAgentStatusDemo(), 3000);
+                    }, 2000);
+                }
+            ];
+
+            function runDemoStep() {
+                if (demoStep < demoSteps.length) {
+                    demoSteps[demoStep]();
+                    demoStep++;
+                    setTimeout(runDemoStep, 2500);
+                } else {
+                    // 重置演示
+                    demoStep = 0;
+                    setTimeout(runDemoStep, 5000);
+                }
+            }
+
+            runDemoStep();
         }
 
         function handleSystemUpdate(event) {
